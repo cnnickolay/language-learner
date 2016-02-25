@@ -4,6 +4,7 @@ import org.junit.runner._
 
 import play.api.test._
 import play.api.test.Helpers._
+import play.libs.Json
 
 /**
  * Add your spec here.
@@ -15,16 +16,25 @@ class ApplicationSpec extends Specification {
 
   "Application" should {
 
-    "send 404 on a bad request" in new WithApplication{
-      route(FakeRequest(GET, "/boum")) must beSome.which (status(_) == NOT_FOUND)
+    "get all medias" in new WithApplication {
+      val result = route(FakeRequest(GET, "/medias")).get
+
+      status(result) must equalTo(OK)
+      contentType(result) must beSome.which(_ == "application/json")
+      val output = contentAsString(result)
     }
 
-    "render the index page" in new WithApplication{
-      val home = route(FakeRequest(GET, "/")).get
+    "add new media" in new WithApplication {
+      val body = """ {"name": "New Media"} """
 
-      status(home) must equalTo(OK)
-      contentType(home) must beSome.which(_ == "text/html")
-      contentAsString(home) must contain ("Your new application is ready.")
+      println(Json.parse(body))
+      val result = route(FakeRequest(Helpers.POST, "/medias", FakeHeaders().add(("Content-type", "application/json")), body)).get
+
+
+      status(result) must equalTo(OK)
+//      contentType(result) must beSome.which(_ == "application/json")
+//      val output = contentAsString(result)
     }
+
   }
 }

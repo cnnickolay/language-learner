@@ -24,3 +24,7 @@ CREATE TABLE word_subtitle (
 );
 
 # --- !Downs
+DROP TABLE word_subtitle;
+DROP TABLE word;
+DROP TABLE subtitle;
+DROP TABLE media;
