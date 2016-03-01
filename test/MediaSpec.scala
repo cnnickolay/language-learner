@@ -10,9 +10,14 @@ import play.libs.Json
 @RunWith(classOf[JUnitRunner])
 class MediaSpec extends Specification {
 
+  val app = FakeApplication(additionalConfiguration = Map(
+    "play.evolutions.db.default.autoApply" -> true,
+    "slick.dbs.default.db.url" -> "jdbc:postgresql://localhost:5432/langdb"
+  ))
+
   "Media" should {
 
-    "get all medias" in new WithApplication {
+    "get all medias" in new WithApplication(app) {
       val result = route(FakeRequest(GET, "/medias")).get
 
       status(result) must equalTo(OK)
@@ -21,7 +26,7 @@ class MediaSpec extends Specification {
       println(output)
     }
 
-    "insert new media item" in new WithApplication() {
+    "insert new media item" in new WithApplication(app) {
       val request = Json.parse(
         """
           |{
@@ -35,7 +40,7 @@ class MediaSpec extends Specification {
       contentType(result) must beSome.which(_ == "text/plain")
     }
 
-    "add new media" in new WithApplication() {
+    "add new media" in new WithApplication(app) {
       val result = route(FakeRequest(Helpers.GET, "/medias/1")).get
 
       status(result) must equalTo(OK)
