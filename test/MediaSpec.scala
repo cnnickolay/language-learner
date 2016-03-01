@@ -11,8 +11,7 @@ import play.libs.Json
 class MediaSpec extends Specification {
 
   val app = FakeApplication(additionalConfiguration = Map(
-    "play.evolutions.db.default.autoApply" -> true,
-    "slick.dbs.default.db.url" -> "jdbc:postgresql://localhost:5432/langdb"
+    "play.evolutions.db.default.autoApply" -> true
   ))
 
   "Media" should {
@@ -26,21 +25,25 @@ class MediaSpec extends Specification {
       println(output)
     }
 
-    "insert new media item" in new WithApplication(app) {
-      val request = Json.parse(
-        """
-          |{
-          |  "name": "test2",
-          |  "media_url": "http://some_url"
-          |}
-        """.stripMargin)
-      val result = route(FakeRequest(Helpers.POST, "/medias", FakeHeaders().add(("Content-type", "application/json")), request.toString)).get
+    /*
+        "insert new media item" in new WithApplication(app) {
+          val request = Json.parse(
+            """
+              |{
+              |  "name": "test2",
+              |  "media_url": "http://some_url"
+              |}
+            """.stripMargin)
+          val result = route(FakeRequest(Helpers.POST, "/medias", FakeHeaders().add(("Content-type", "application/json")), request.toString)).get
 
-      status(result) must equalTo(OK)
-      contentType(result) must beSome.which(_ == "text/plain")
-    }
+          status(result) must equalTo(OK)
+          contentType(result) must beSome.which(_ == "text/plain")
+          Thread.sleep(2000)
+        }
+    */
 
-    "add new media" in new WithApplication(app) {
+/*
+    "get certain media" in new WithApplication(app) {
       val result = route(FakeRequest(Helpers.GET, "/medias/1")).get
 
       status(result) must equalTo(OK)
@@ -56,7 +59,19 @@ class MediaSpec extends Specification {
           |}
         """.stripMargin)
       println(contentAsString(result))
-//      Thread.sleep(1000)
+    }
+*/
+
+  }
+
+  "Media 2" in new WithApplication(app) {
+    "get all medias2" in new WithApplication(app) {
+      val result = route(FakeRequest(GET, "/medias")).get
+
+      status(result) must equalTo(OK)
+      contentType(result) must beSome.which(_ == "application/json")
+      val output = contentAsString(result)
+      println(output)
     }
 
   }

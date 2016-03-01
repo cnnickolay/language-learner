@@ -32,4 +32,10 @@ class MediaController @Inject()(mediaDao: MediaDao) extends Controller {
     }.getOrElse(Future{BadRequest("Unable to parse payload")})
   }
 
+  def delete(id: Long) = Action.async {
+    for {
+      _ <- mediaDao.delete(id)
+    } yield Ok(s"Media with id $id deleted")
+  }
+
 }

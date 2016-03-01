@@ -2,15 +2,21 @@
 
 app.controller('MainCtrl', function ($scope, MediaService, SubtitleService) {
 
-  $scope.medias = MediaService.get({id: 1}, function() {
+  $scope.medias = MediaService.query();
+  $scope.media = new MediaService();
 
-    console.log(JSON.stringify($scope.medias, null, 2));
-/*
-    $scope.subtitles = SubtitleService.query(function () {
-
+  $scope.addNew = function() {
+    $scope.media.$save(function() {
+      $scope.medias = MediaService.query();
     });
-*/
+  };
 
-  });
+  $scope.delete = function(id) {
+    MediaService.get({id: id}, function (media) {
+      media.$delete(function() {
+        $scope.medias = MediaService.query();
+      });
+    });
+  };
 
 });

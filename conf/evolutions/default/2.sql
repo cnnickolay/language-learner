@@ -2,7 +2,7 @@
 INSERT INTO media (id, name, media_url) VALUES(1, 'Dialogue 1', 'https://www.dropbox.com/s/iw9pbrysoe56hf0/Grammaire_en_dialogues_No18.mp3?raw=1');
 INSERT INTO subtitle (id, pos, "offset", media_id, "text") VALUES
   (1, 1, 11, 1, 'Simon : Est-ce que tu aimes lire ?'),
-  (2, 1, 13, 1, 'Clément : Ah oui ; j''adore lire ! En fait, je lis quelque chose chaque soir avant de me coucher'),
+  (2, 1, 13, 1, 'Clément : Ah oui ;; j''adore lire ! En fait, je lis quelque chose chaque soir avant de me coucher'),
   (3, 1, 17.5, 1, 'Simon : Qu''est-ce que tu préfères lire ?'),
   (4, 1, 19, 1, 'Clément : Ça dépend. Certaines jours, je préfère lire un roman , d''autres jours de la poésie...'),
   (5, 1, 24, 1, 'Simon : Qu''est-ce tu lis, en ce moment? Tu lis quelque chose d''intéressant?'),

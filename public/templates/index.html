@@ -1,0 +1,17 @@
+<div>
+    <span>{{test}}</span>
+
+    <table class="table">
+        <tr ng-repeat="media in medias">
+            <td>{{media.id}}</td>
+            <td>{{media.name}}</td>
+            <td><a href="{{media.media_url}}">{{media.media_url}}</a></td>
+            <td><button class="btn btn-sm btn-danger" ng-click="delete(media.id)"><span class="glyphicon glyphicon-trash"></span></button></td>
+            <td><a href="#/media/{{media.id}}" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-edit"></span></a></td>
+        </tr>
+    </table>
+
+    <label><span>Media name:</span> <input ng-model="media.name"/></label>
+    <label><span>Media url:</span> <input ng-model="media.media_url"/></label>
+    <button class="btn btn-sm btn-success" ng-click="addNew()">Add media</button>
+</div>
