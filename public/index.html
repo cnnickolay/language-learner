@@ -91,6 +91,14 @@
                         scope.timeCallback = this.currentTime;
                         scope.$apply();
                     });
+                    element.on('pause',function() {
+                        scope.isPlaying = false;
+                        scope.$apply();
+                    });
+                    element.on('play',function() {
+                        scope.isPlaying = true;
+                        scope.$apply();
+                    });
                 }
             };
         })

@@ -11,14 +11,8 @@ import scala.concurrent.Future
 
 class Application @Inject()(mediaDao: MediaDao) extends Controller {
 
-  def index = Action.async {
-    for {
-      _ <- mediaDao.delete(1)
-      _ <- mediaDao.insert(Media(id = None, name = "med1"))
-      medias <- mediaDao.all()
-    } yield Ok(Json.toJson(medias))
+  def index = Action {
+    Ok(views.html.index("Your new application is ready."))
   }
-
-
 
 }

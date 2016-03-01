@@ -7,32 +7,21 @@ import play.api.libs.json.{Json, JsPath, Writes}
 
 object Model {
 
-  case class Media(id: Option[Long], name: String)
-  case class Subtitle(id: Option[Long], pos: Int, mediaId: Long)
-  case class Word(id: Option[Long], word: String)
-  case class WordSubtitle(id: Option[Long], time: BigDecimal, pos: Int, wordId: Long, subtitleId: Long)
+  case class Media(id: Option[Long], name: String, mediaUrl: String)
+  case class Subtitle(id: Option[Long], pos: Int, offset: BigDecimal, text: String, mediaId: Long)
 
   implicit val mediaFormat: Format[Media] = (
     (__ \ "id").formatNullable[Long] and
-    (__ \ "name").format[String]
+    (__ \ "name").format[String] and
+    (__ \ "media_url").format[String]
   )(Media.apply, unlift(Media.unapply))
 
   implicit val subtitleFormat: Format[Subtitle] = (
     (__ \ "id").formatNullable[Long] and
     (__ \ "pos").format[Int] and
+    (__ \ "offset").format[BigDecimal] and
+    (__ \ "text").format[String] and
     (__ \ "mediaId").format[Long]
   )(Subtitle.apply, unlift(Subtitle.unapply))
 
-  implicit val wordFormat: Format[Word] = (
-    (__ \ "id").formatNullable[Long] and
-    (__ \ "word").format[String]
-  )(Word.apply, unlift(Word.unapply))
-
-  implicit val wordSubtitleFormat: Format[WordSubtitle] = (
-    (__ \ "id").formatNullable[Long] and
-    (__ \ "time").format[BigDecimal] and
-    (__ \ "pos").format[Int] and
-    (__ \ "wordId").format[Long] and
-    (__ \ "subtitleId").format[Long]
-  )(WordSubtitle.apply, unlift(WordSubtitle.unapply))
 }

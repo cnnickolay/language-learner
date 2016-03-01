@@ -2,10 +2,10 @@ package controllers
 
 import com.google.inject.Inject
 import model.MediaDao
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import model.Model._
 import play.api.libs.json._
 import play.api.mvc._
-import model.Model._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 import scala.concurrent.Future
 
@@ -13,20 +13,23 @@ class MediaController @Inject()(mediaDao: MediaDao) extends Controller {
 
   def getAll = Action.async {
     for {
-      _ <- mediaDao.insert(Media(id = None, name = "med1"))
       medias <- mediaDao.all()
     } yield Ok(Json.toJson(medias))
   }
 
-  def create = Action.async { request =>
-    val jsonRequest: JsValue = request.body.asJson.get
-    val x: Media = jsonRequest.validate[Media] match {
-      case JsSuccess(x: Media, _) => x
-    }
-
+  def byId(id: Long) = Action.async {
     for {
-      _ <- mediaDao.insert(x)
-    } yield Ok("")
+      byId <- mediaDao.byId(id)
+    } yield Ok(Json.toJson(byId))
+  }
+
+  def create = Action.async { request =>
+    request.body.asJson.map { (json: JsValue) =>
+      json.validate[Media] match {
+        case JsSuccess(media: Media, _) => mediaDao.insert(media); Future{Ok("inserted media item")}
+        case JsError(e) => Future{ BadRequest(s"Bad payload: $e") }
+      }
+    }.getOrElse(Future{BadRequest("Unable to parse payload")})
   }
 
 }

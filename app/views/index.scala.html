@@ -2,6 +2,12 @@
 
 @main("Welcome to Play") {
 
-    @play20.welcome(message)
+    <div ng-controller="MainCtrl">
+        <span>{{test}}</span>
+
+        <ul>
+            <li ng-repeat="media in medias">{{media.id}}#{{media.name}}</li>
+        </ul>
+    </div>
 
 }

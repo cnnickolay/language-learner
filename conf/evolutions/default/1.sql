@@ -1,30 +1,18 @@
 # --- !Ups
 CREATE TABLE media (
-  id   BIGSERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL
+  id        BIGSERIAL PRIMARY KEY,
+  name      VARCHAR(100) NOT NULL,
+  media_url VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE subtitle (
   id       BIGSERIAL PRIMARY KEY,
-  pos      INT    NOT NULL,
-  media_id BIGINT NOT NULL REFERENCES media (id)
-);
-
-CREATE TABLE word (
-  id   BIGSERIAL PRIMARY KEY,
-  word VARCHAR(40) NOT NULL
-);
-
-CREATE TABLE word_subtitle (
-  id          BIGSERIAL PRIMARY KEY,
-  time        DECIMAL,
-  pos         INT    NOT NULL,
-  word_id     BIGINT NOT NULL REFERENCES word (id),
-  subtitle_id BIGINT NOT NULL REFERENCES subtitle (id)
+  pos      INT     NOT NULL,
+  "offset" DECIMAL NOT NULL,
+  "text"   TEXT    NOT NULL,
+  media_id BIGINT  NOT NULL REFERENCES media (id)
 );
 
 # --- !Downs
-DROP TABLE word_subtitle;
-DROP TABLE word;
 DROP TABLE subtitle;
 DROP TABLE media;
