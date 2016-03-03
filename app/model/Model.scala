@@ -13,7 +13,7 @@ object Model {
   implicit val mediaFormat: Format[Media] = (
     (__ \ "id").formatNullable[Long] and
     (__ \ "name").format[String] and
-    (__ \ "media_url").format[String]
+    (__ \ "mediaUrl").format[String]
   )(Media.apply, unlift(Media.unapply))
 
   implicit val subtitleFormat: Format[Subtitle] = (

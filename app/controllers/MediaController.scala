@@ -38,4 +38,13 @@ class MediaController @Inject()(mediaDao: MediaDao) extends Controller {
     } yield Ok(s"Media with id $id deleted")
   }
 
+  def update(id: Long) = Action.async { request =>
+    request.body.asJson.map( json =>
+      json.validate[Media] match {
+        case JsSuccess(media, _) => mediaDao.update(id, media); Future{Ok(s"media item $id was successfully updated")}
+        case JsError(e) => Future{ BadRequest(s"Bad payload: $e")}
+      }
+    ).getOrElse(Future{BadRequest("Unable to parse payload")})
+  }
+
 }

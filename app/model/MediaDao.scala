@@ -23,6 +23,7 @@ class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
   def byId(id: Long): Future[Option[Media]] = db.run(Medias.filter(_.id === id).result.headOption)
   def insert(media: Media) = db.run(Medias += media)
   def delete(id: Long) = db.run(Medias.filter(_.id === id).delete)
+  def update(id: Long, media: Media) = db.run(Medias.filter(_.id === id).update(media))
 
   class MediaTable(tag: Tag) extends Table[Media](tag, "media") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
