@@ -7,8 +7,7 @@ CREATE TABLE media (
 
 CREATE TABLE subtitle (
   id       BIGSERIAL PRIMARY KEY,
-  pos      INT     NOT NULL,
-  "offset" DECIMAL NOT NULL,
+  "offset" DECIMAL,
   "text"   TEXT    NOT NULL,
   media_id BIGINT  NOT NULL REFERENCES media (id)
 );

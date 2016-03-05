@@ -1,6 +1,6 @@
 'use strict';
 
-app.controller('MainCtrl', function ($scope, MediaService, SubtitleService) {
+app.controller('MainCtrl', function ($scope, MediaService, AudioPlayerService) {
 
   $scope.medias = MediaService.query();
   $scope.media = new MediaService();
@@ -18,5 +18,16 @@ app.controller('MainCtrl', function ($scope, MediaService, SubtitleService) {
       });
     });
   };
+
+  $scope.play = function(media) {
+    $scope.player.fileUrl = media.mediaUrl;
+    $scope.player.isPlaying = false;
+    $scope.player.isPlaying = true;
+  };
+  $scope.pause = function(media) {
+    $scope.player.isPlaying = false;
+  };
+
+  $scope.player = AudioPlayerService;
 
 });

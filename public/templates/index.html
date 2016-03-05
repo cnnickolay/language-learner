@@ -1,12 +1,18 @@
 <div>
     <span>{{test}}</span>
 
+    <audio-player is-playing="player.isPlaying" file-url="{{player.fileUrl}}" time-callback="player.timeCallback" jump-to="player.jumpTo"></audio-player>
+
     <table class="table">
         <tr ng-repeat="media in medias">
             <td>{{media.id}}</td>
+            <td>
+                <button ng-hide="player.isPlaying && player.fileUrl == media.mediaUrl" ng-click="play(media)" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-play"></span></button>
+                <button ng-show="player.isPlaying && player.fileUrl == media.mediaUrl" ng-click="pause(media)" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-pause"></span></button>
+            </td>
             <td>{{media.name}}</td>
             <td><a href="{{media.mediaUrl}}">{{media.mediaUrl}}</a></td>
-            <td><a href="#/media/{{media.id}}" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-edit"></span></a></td>
+            <td><a href="#/media/{{media.id}}" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span></a></td>
             <td><button class="btn btn-sm btn-danger" ng-click="delete(media.id)"><span class="glyphicon glyphicon-trash"></span></button></td>
         </tr>
     </table>
