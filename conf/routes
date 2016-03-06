@@ -14,6 +14,7 @@ GET           /medias/:mediaId/subtitles                    controllers.Subtitle
 GET           /medias/:mediaId/subtitles/:subtitleId        controllers.SubtitleController.byId(mediaId: Long, subtitleId: Long)
 PUT           /medias/:mediaId/subtitles/:subtitleId        controllers.SubtitleController.update(mediaId: Long, subtitleId: Long)
 DELETE        /medias/:mediaId/subtitles/:subtitleId        controllers.SubtitleController.delete(mediaId: Long, subtitleId: Long)
+POST          /medias/:mediaId/subtitles/srt                controllers.SubtitleController.uploadSrt(mediaId: Long)
 POST          /medias/:mediaId/subtitles                    controllers.SubtitleController.create(mediaId: Long)
 
 # Map static resources from the /public folder to the /assets URL path
