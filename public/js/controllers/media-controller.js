@@ -76,13 +76,14 @@ app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, Sub
   $scope.player = {
     isPlaying: false,
     timeCallback: 0,
-    jumpTo: 0
+    jumpTo: 0,
+    singleSubtitleMode: true
   };
 
   $scope.play = function (subtitle) {
     $scope.player.jumpTo = subtitle.offset;
-    $scope.player.isPlaying = true;
     $scope.currentSubtitle = subtitle;
+    $scope.player.isPlaying = true;
   };
 
   $scope.playFromTime = function (time) {
@@ -99,8 +100,12 @@ app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, Sub
       }
     });
     if (foundSub && (!$scope.currentSubtitle || foundSub.id != $scope.currentSubtitle.id)) {
-      //$scope.currentSubtitle = foundSub;
-      $scope.player.isPlaying = false;
+      if ($scope.player.singleSubtitleMode) {
+        $scope.pause();
+        $scope.player.jumpTo = $scope.currentSubtitle.offset;
+      } else {
+        $scope.currentSubtitle = foundSub;
+      }
     }
   });
 
@@ -132,10 +137,14 @@ app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, Sub
       var newSrt = new SubtitleSrtUploadService();
       newSrt.mediaId = $scope.mediaId;
       newSrt.srt = data;
-      newSrt.$save({mediaId: $scope.mediaId}, function() {
+      newSrt.$save({mediaId: $scope.mediaId}, function () {
         $scope.refreshSubtitles();
       });
     };
     r.readAsBinaryString(f);
-  }
+  };
+
+  $scope.selection = function(subtitle, selected) {
+
+  };
 });

@@ -18,6 +18,8 @@ class SubtitleDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val m
   }
   def delete(mediaId: Long, subtitleId: Long) = db.run(Subtitles.filter(sub => sub.mediaId === mediaId && sub.id === subtitleId).delete)
 
+  def deleteAll(mediaId: Long) = db.run(Subtitles.filter(sub => sub.mediaId === mediaId).delete)
+
   def create(subtitle: Subtitle) = db.run { Subtitles += subtitle }
   def totalSubtitles(mediaId: Long) = db.run(Subtitles.filter(_.mediaId === mediaId).size.result)
 

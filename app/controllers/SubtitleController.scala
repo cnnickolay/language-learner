@@ -1,6 +1,7 @@
 package controllers
 
 import java.io.File
+import java.math.MathContext
 
 import com.google.inject.Inject
 import model.Model.{SubtitlesSrtRaw, Subtitle}
@@ -14,6 +15,7 @@ import utils.SrtParser
 import utils.SrtParser.TextBlock
 
 import scala.concurrent.Future
+import scala.math.BigDecimal.RoundingMode
 
 
 class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller {
@@ -73,7 +75,7 @@ class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller 
             case JsSuccess(srt, _) =>
               val text = SrtParser.parseText(srt.srt)
               text.foreach(textBlock =>
-                subtitleDao.create(Subtitle(id = None, offset = Some(textBlock.timeFrom), textBlock.text, mediaId))
+                subtitleDao.create(Subtitle(id = None, offset = Some(textBlock.timeFrom.setScale(1, RoundingMode.DOWN)), textBlock.text, mediaId))
               )
               Ok(text.toString())
             case JsError(_) => BadRequest("Unable to parse json")

@@ -1,7 +1,7 @@
 package controllers
 
 import com.google.inject.Inject
-import model.MediaDao
+import model.{SubtitleDao, MediaDao}
 import model.Model._
 import play.api.libs.json._
 import play.api.mvc._
@@ -9,7 +9,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 import scala.concurrent.Future
 
-class MediaController @Inject()(mediaDao: MediaDao) extends Controller {
+class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) extends Controller {
 
   def getAll = Action.async {
     for {
@@ -33,9 +33,14 @@ class MediaController @Inject()(mediaDao: MediaDao) extends Controller {
   }
 
   def delete(id: Long) = Action.async {
-    for {
-      _ <- mediaDao.delete(id)
-    } yield Ok(s"Media with id $id deleted")
+    Future{
+    }.flatMap { _ =>
+      subtitleDao.deleteAll(id)
+    }.flatMap{ _ =>
+      mediaDao.delete(id)
+    }.flatMap{ _ =>
+      Future(Ok(s"Media with id $id deleted"))
+    }
   }
 
   def update(id: Long) = Action.async { request =>

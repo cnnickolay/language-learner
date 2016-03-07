@@ -9,7 +9,7 @@ import scala.util.matching.Regex
   */
 object SrtParser {
 
-  case class TextBlock(number: Int, timeFrom: Double, timeTo: Double, text: String)
+  case class TextBlock(number: Int, timeFrom: BigDecimal, timeTo: BigDecimal, text: String)
 
   private val timeRegex = "(\\d\\d):(\\d\\d):(\\d\\d),(\\d\\d\\d) \\-\\-> (\\d\\d):(\\d\\d):(\\d\\d),(\\d\\d\\d)".r
   private val timeRegexMinutes = "(\\d\\d):(\\d\\d) \\-\\-> (\\d\\d):(\\d\\d)".r

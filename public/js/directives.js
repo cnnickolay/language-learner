@@ -50,3 +50,22 @@ app.directive('audioPlayer', function () {
     }
   };
 });
+
+
+app.directive('selector', function () {
+  return {
+    restrict: 'A',
+    scope: {
+      selection: '&'
+    },
+    link: function(scope, element, attributes) {
+      element.on('mouseup', function (e) {
+        var selected = window.getSelection().toString();
+        if (selected) {
+          scope.selection({selected: selected});
+          //scope.$apply();
+        }
+      });
+    }
+  };
+});
