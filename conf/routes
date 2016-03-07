@@ -20,5 +20,7 @@ POST          /medias/:mediaId/subtitles                    controllers.Subtitle
 GET           /languages/:id                                controllers.LanguageController.byId(id: Int)
 GET           /languages                                    controllers.LanguageController.getAll
 
+GET           /translations                                 controllers.TranslationController.translate(from: String, to: String, word: String)
+
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)

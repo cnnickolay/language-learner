@@ -27,7 +27,7 @@ object Translator {
           .filter {
             resultNode =>
               ((resultNode \ "@class").text contains "result-wrapper") &&
-                ((resultNode \\ "div").filter(resultLeftNode => (resultLeftNode \ "@class").text contains "result-left") \\ "strong").text == word
+                ((resultNode \\ "div").filter(resultLeftNode => (resultLeftNode \ "@class").text contains "result-left") \\ "strong").text.contains(word)
           }.theSeq
 
       found.map { n => processSegment(from, to, n) }

@@ -1,7 +1,8 @@
 package utils
 
 import org.scalatest.FlatSpec
-import utils.Translator.{French, English}
+import play.api.libs.json.Json
+import utils.TranslatorObjects.{English, French}
 
 /**
   * Created by Nikolay Cherkezishvili on 07/03/2016
@@ -9,7 +10,9 @@ import utils.Translator.{French, English}
 class Translator$Test extends FlatSpec {
 
   it should "extract translation" in {
-    Translator.translate(French, English, "courant")
+    val translated = Translator.translate(French, English, "courant")
+    val json = Json.toJson(translated)
+    println(json)
   }
 
 }

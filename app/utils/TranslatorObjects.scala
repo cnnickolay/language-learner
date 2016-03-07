@@ -7,18 +7,19 @@ import play.api.libs.json._
 object TranslatorObjects {
 
   case class Language(id: Int, name: String)
-  case object English extends Language(id = 1, name = "english")
-  case object French extends Language(id = 2, name = "french")
+  val English = Language(id = 1, name = "english")
+  val French = Language(id = 2, name = "french")
+  val Languages = List(English, French)
 
-  sealed trait WordType{ val id: Int; val wordType: String }
-  case object Adjective extends WordType {val id = 1; val wordType = "adjective"}
-  case object Adverb extends WordType {val id = 2; val wordType = "adverb"}
-  case object Noun extends WordType {val id = 3; val wordType = "noun"}
-  case object Verb extends WordType {val id = 4; val wordType = "verb"}
+  case class WordType(id: Int, wordType: String)
+  val Adjective = WordType (id = 1, wordType = "adjective")
+  val Adverb = WordType (id = 2, wordType = "adverb")
+  val Noun = WordType (id = 3, wordType = "noun")
+  val Verb = WordType (id = 4, wordType = "verb")
 
-  sealed trait Gender { val id: Int; val gender: String }
-  case object Male extends Gender {val id = 1; val gender = "male"}
-  case object Female extends Gender {val id = 2; val gender = "female"}
+  case class Gender(id: Int, gender: String)
+  val Male = Gender(id = 1, gender = "male")
+  val Female = Gender(id = 2, gender = "female")
 
   case class Word(word: String, description: Option[String], language: Language, wordType: Option[WordType], gender: Option[Gender])
   case class Translation(word: Word, translation: Word, examples: List[Example])
@@ -28,5 +29,34 @@ object TranslatorObjects {
     (__ \ "id").write[Int] and
     (__ \ "name").write[String]
   )(unlift(Language.unapply))
+
+  implicit val wordTypeWrites: Writes[WordType] = (
+    (__ \ "id").write[Int] and
+    (__ \ "wordType").write[String]
+  )(unlift(WordType.unapply))
+
+  implicit val genderWrites: Writes[Gender] = (
+    (__ \ "id").write[Int] and
+    (__ \ "gender").write[String]
+  )(unlift(Gender.unapply))
+
+  implicit val exampleWrites: Writes[Example] = (
+    (__ \ "sentence").write[String] and
+    (__ \ "translation").write[String]
+  )(unlift(Example.unapply))
+
+  implicit val wordWrites: Writes[Word] = (
+    (__ \ "word").write[String] and
+    (__ \ "description").writeNullable[String] and
+    (__ \ "language").write[Language] and
+    (__ \ "wordType").writeNullable[WordType] and
+    (__ \ "gender").writeNullable[Gender]
+  )(unlift(Word.unapply))
+
+  implicit val translationWrites: Writes[Translation] = (
+    (__ \ "word").write[Word] and
+    (__ \ "translation").write[Word] and
+    (__ \ "examples").write[Seq[Example]]
+  )(unlift(Translation.unapply))
 }
 

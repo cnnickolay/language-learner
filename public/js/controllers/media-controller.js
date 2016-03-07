@@ -1,6 +1,6 @@
 'use strict';
 
-app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, SubtitleSrtUploadService, LanguageService, $routeParams, $location) {
+app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, SubtitleSrtUploadService, LanguageService, TranslationService, $routeParams, $location) {
 
   $scope.mediaId = parseInt($routeParams.mediaId);
 
@@ -149,6 +149,10 @@ app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, Sub
   };
 
   $scope.selection = function(subtitle, selected) {
+    TranslationService.query({from: 'french', to: 'english', word: selected.toLowerCase().replace(/ /g , "-")}, function (translation) {
+      $scope.translation = translation;
+      console.log(JSON.stringify(translation, null, 2));
+    });
   };
 
   $scope.languages = LanguageService.query();
