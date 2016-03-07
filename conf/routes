@@ -17,5 +17,8 @@ DELETE        /medias/:mediaId/subtitles/:subtitleId        controllers.Subtitle
 POST          /medias/:mediaId/subtitles/srt                controllers.SubtitleController.uploadSrt(mediaId: Long)
 POST          /medias/:mediaId/subtitles                    controllers.SubtitleController.create(mediaId: Long)
 
+GET           /languages/:id                                controllers.LanguageController.byId(id: Int)
+GET           /languages                                    controllers.LanguageController.getAll
+
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)

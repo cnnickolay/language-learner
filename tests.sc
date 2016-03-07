@@ -1,16 +1,10 @@
-import java.util
+import utils.Translator.{Male, Noun, Female}
 
-import com.gargoylesoftware.htmlunit.html.{HtmlElement, HtmlPage}
-import com.gargoylesoftware.htmlunit.{BrowserVersion, WebClient}
+val maleNounRegex = """.*\{m\}""".r
+val femaleNounRegex = """.*\{f\}""".r
 
-import scala.collection.JavaConverters._
-import scala.xml.XML
-
-val w = new WebClient(BrowserVersion.CHROME)
-w.getOptions.setJavaScriptEnabled(false)
-w.getOptions.setCssEnabled(false)
-
-val page = w.getPage("http://en.bab.la/dictionary/french-english/nuit"): HtmlPage
-val xml = XML.loadString(page.asXml())
-val div = xml \ "div"
-println(div)
+val (wordType, gender) = "word {f}" match {
+  case maleNounRegex() => (Some(Noun), Some(Male))
+  case femaleNounRegex() => (Some(Noun), Some(Female))
+  case _ => (None, None)
+}

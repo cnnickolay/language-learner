@@ -9,6 +9,7 @@
         <ul class="list-inline">
             <li>Media name: <input ng-model="media.name"/></li>
             <li>Media url: <input ng-model="media.mediaUrl"/></li>
+            <li><select ng-options="l.name for l in languages track by l.id" ng-model="language" ng-change="media.languageId = language.id"></select></li>
             <li><button class="btn btn-sm btn-info" ng-click="update()">Save</button>
                 <button class="btn btn-sm btn-danger" ng-click="delete()"><span class="glyphicon glyphicon-trash"></span></button></li>
         </ul>

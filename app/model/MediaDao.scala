@@ -1,23 +1,18 @@
 package model
 
-import model.Model.Media
-import slick.lifted
-
-import scala.concurrent.Future
-
 import javax.inject.Inject
-import play.api.db.slick.DatabaseConfigProvider
-import play.api.db.slick.HasDatabaseConfigProvider
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+import model.Model.Media
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 
-
 import scala.concurrent.Future
 
 
-class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
+class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, val languageDao: LanguageDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   import driver.api._
+  import languageDao.Languages
 
   def all(): Future[Seq[Media]] = db.run(Medias.result)
   def byId(id: Long): Future[Option[Media]] = db.run(Medias.filter(_.id === id).result.headOption)
@@ -29,9 +24,13 @@ class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def mediaUrl = column[String]("media_url")
-    def * = (id.?, name, mediaUrl) <> (Media.tupled, Media.unapply)
+    def languageId = column[Int]("language_id")
+
+    def language = foreignKey("language_id", languageId, Languages)(_.id)
+
+    def * = (id.?, name, mediaUrl, languageId) <> (Media.tupled, Media.unapply)
   }
 
-  val Medias: TableQuery[MediaTable] = TableQuery[MediaTable]
+  val Medias = TableQuery[MediaTable]
 
 }

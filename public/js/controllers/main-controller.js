@@ -1,6 +1,6 @@
 'use strict';
 
-app.controller('MainCtrl', function ($scope, MediaService, AudioPlayerService) {
+app.controller('MainCtrl', function ($scope, MediaService, AudioPlayerService, LanguageService) {
 
   $scope.medias = MediaService.query();
   $scope.media = new MediaService();
@@ -29,5 +29,13 @@ app.controller('MainCtrl', function ($scope, MediaService, AudioPlayerService) {
   };
 
   $scope.player = AudioPlayerService;
+
+  $scope.augmentMedia = function(media) {
+    LanguageService.get({id: media.languageId}, function(language) {
+      media.language = language;
+    });
+  };
+
+  $scope.languages = LanguageService.query();
 
 });

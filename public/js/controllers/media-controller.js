@@ -1,6 +1,6 @@
 'use strict';
 
-app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, SubtitleSrtUploadService, $routeParams, $location) {
+app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, SubtitleSrtUploadService, LanguageService, $routeParams, $location) {
 
   $scope.mediaId = parseInt($routeParams.mediaId);
 
@@ -8,6 +8,10 @@ app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, Sub
     MediaService.get({id: $scope.mediaId}, function (media) {
       $scope.media = media;
       $scope.fileUrl = media.mediaUrl;
+
+      LanguageService.get({id: media.languageId}, function (language) {
+        $scope.language = language;
+      });
     });
   };
 
@@ -145,6 +149,7 @@ app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, Sub
   };
 
   $scope.selection = function(subtitle, selected) {
-
   };
+
+  $scope.languages = LanguageService.query();
 });
