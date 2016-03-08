@@ -1,8 +1,28 @@
 'use strict';
 
-app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, SubtitleSrtUploadService, LanguageService, TranslationService, $routeParams, $location) {
+app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, SubtitleService, SubtitleSrtUploadService, LanguageService, TranslationService, $routeParams, $location) {
 
   $scope.mediaId = parseInt($routeParams.mediaId);
+
+  $scope.open = function () {
+    var modalInstance = $uibModal.open({
+      animation: false,
+      templateUrl: '/assets/templates/word-translation.html',
+      controller: 'TranslatorController',
+      size: 'lg',
+      resolve: {
+        translations: function () {
+          return $scope.translations;
+        }
+      }
+    });
+
+    modalInstance.result.then(function (selectedItem) {
+      $scope.selected = selectedItem;
+    }, function () {
+      $log.info('Modal dismissed at: ' + new Date());
+    });
+  };
 
   $scope.refresh = function () {
     MediaService.get({id: $scope.mediaId}, function (media) {
@@ -151,6 +171,7 @@ app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, Sub
   $scope.selection = function(subtitle, selected) {
     TranslationService.query({from: 'french', to: 'english', word: selected.toLowerCase().replace(/ /g , "-")}, function (translations) {
       $scope.translations = translations;
+      $scope.open();
       console.log(JSON.stringify(translations, null, 2));
     });
   };

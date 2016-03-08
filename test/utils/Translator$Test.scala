@@ -10,7 +10,7 @@ import utils.TranslatorObjects.{English, French}
 class Translator$Test extends FlatSpec {
 
   it should "extract translation" in {
-    val translated = Translator.translate(French, English, "adorer")
+    val translated = Translator.translate(French, English, "chaque")
     val json = Json.toJson(translated)
     println(json)
   }

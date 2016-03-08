@@ -15,11 +15,13 @@ object TranslatorObjects {
   val Adjective = WordType (id = 1, wordType = "adjective")
   val Adverb = WordType (id = 2, wordType = "adverb")
   val Noun = WordType (id = 3, wordType = "noun")
-  val Verb = WordType (id = 4, wordType = "verb")
+  val Pronoun = WordType (id = 4, wordType = "pronoun")
+  val Verb = WordType (id = 5, wordType = "verb")
+  val VerbTransitive = WordType (id = 6, wordType = "verb transitive")
 
-  case class Gender(id: Int, gender: String)
-  val Male = Gender(id = 1, gender = "male")
-  val Female = Gender(id = 2, gender = "female")
+  case class Gender(id: Int, gender: String, short: String)
+  val Masculine = Gender(id = 1, gender = "masculine", short = "m.")
+  val Feminine = Gender(id = 2, gender = "feminine", short = "f.")
 
   case class Word(word: String, description: Option[String], language: Language, wordType: Option[WordType], gender: Option[Gender])
   case class Translation(word: Word, translation: Word, examples: List[Example])
@@ -37,7 +39,8 @@ object TranslatorObjects {
 
   implicit val genderWrites: Writes[Gender] = (
     (__ \ "id").write[Int] and
-    (__ \ "gender").write[String]
+    (__ \ "gender").write[String] and
+    (__ \ "short").write[String]
   )(unlift(Gender.unapply))
 
   implicit val exampleWrites: Writes[Example] = (

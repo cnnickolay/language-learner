@@ -1,5 +1,15 @@
 <div>
-    <div ng-repeat="t in translations">
-        {{t.word.word}} - {{t.word.description}} # {{t.translation.word}} - {{t.translation.description}}
-    </div>
+    <h1>Translation</h1>
+    <table class="table table-striped">
+        <tbody ng-repeat="t in translations">
+            <tr>
+                <th>{{t.word.word}}<span ng-show="{{t.word.wordType}}"> <span ng-non-bindable>{</span>{{t.word.wordType.wordType}}<span ng-non-bindable>}</span></span><span ng-show="{{t.word.gender}}"> ({{t.word.gender.short}})</span></th>
+                <th>{{t.translation.word}}<span ng-show="{{t.translation.wordType}}"> <span ng-non-bindable>{</span>{{t.translation.wordType.wordType}}<span ng-non-bindable>}</span></span><span ng-show="t.translation.gender"> ({{t.translation.gender.short}})</span></th>
+            </tr>
+            <tr ng-repeat="example in t.examples">
+                <td>{{example.sentence}}</td>
+                <td>{{example.translation}}</td>
+            </tr>
+        </tbody>
+    </table>
 </div>

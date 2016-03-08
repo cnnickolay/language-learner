@@ -21,22 +21,6 @@ object Translator {
     XML.loadString(rawXml)
   }
 
-  def readPageByWebClient(from: Language, to: Language, word: String): Elem = {
-    val capabilities = DesiredCapabilities.chrome()
-    capabilities.setJavascriptEnabled(false)
-    val driver = new RemoteWebDriver(new URL("http://192.168.99.100:4444/wd/hub"), capabilities)
-//    val driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capabilities)
-
-    try {
-      driver.get(s"http://en.bab.la/dictionary/french-english/$word")
-
-      val source = driver.getPageSource
-      XML.loadString(source)
-    } finally {
-      driver.quit()
-    }
-  }
-
   def translate(from: Language, to: Language, word: String): Seq[Translation] = {
     val xml = readPageByHtmlUnit(from, to, word)
     val found =
@@ -54,7 +38,7 @@ object Translator {
     val leftResults = (node \\ "div").filter(n => (n \ "@class").text contains "result-left")
     val rightResults = (node \\ "div").filter(n => (n \ "@class").text contains "result-right")
 
-    def removeExtraSpaces(word: String) = word.replaceAll("[\n ]+", " ").replaceAll("' ", "'").replaceAll("’ ", "’").replaceAll(" ,", ",").trim
+    def removeExtraSpaces(word: String) = word.replaceAll("[\n ]+", " ").replaceAll("' ", "'").replaceAll("’ ", "’").replaceAll(" ,", ",").replaceAll(" \\.", ".").trim
 
     val examples = ListBuffer[Example]()
     for (i <- 1 until leftResults.length) {
@@ -66,29 +50,32 @@ object Translator {
     val dirtyWord: String = removeExtraSpaces(leftResults(0).text)
     val dirtyTranslation: String = removeExtraSpaces(rightResults(0).text.trim)
 
-    val adjectiveRegex = """([a-zA-Z\- ]+) \{ adj\. \} ?(.*)""".r
-    val maleAdjectiveRegex = """([a-zA-Z\- ]+) \{ adj\. m \} ?(.*)""".r
-    val femaleAdjectiveRegex = """([a-zA-Z\- ]+) \{ adj\. f \} ?(.*)""".r
-    val maleNounRegex = """([a-zA-Z\- ]+) \{ m \} ?(.*)""".r
-    val femaleNounRegex = """([a-zA-Z\- ]+) \{ f \} ?(.*)""".r
-    val nounRegex = """([a-zA-Z\- ]+) \{ noun \} ?(.*)""".r
-    val verbRegex = """([.\- ]+) (\[.*\]) \{ vb \} ?(.*)""".r
-    val onlyWordRegex = """([a-zA-Z\- ]+) .*""".r
-
-
     def formatWord(rawWord: String): (String, Option[String], Option[WordType], Option[Gender]) = {
-//      case adjectiveRegex(extractedWord, description) => (extractedWord, if (description.isEmpty) None else Some(description), Some(Adjective), None)
-//      case maleAdjectiveRegex(extractedWord, description) => (extractedWord, if (description.isEmpty) None else Some(description), Some(Adjective), Some(Male))
-//      case femaleAdjectiveRegex(extractedWord, description) => (extractedWord, if (description.isEmpty) None else Some(description), Some(Adjective), Some(Female))
-//      case maleNounRegex(extractedWord, description) => (extractedWord, if (description.isEmpty) None else Some(description), Some(Noun), Some(Male))
-//      case femaleNounRegex(extractedWord, description) => (extractedWord, if (description.isEmpty) None else Some(description), Some(Noun), Some(Female))
-//      case nounRegex(extractedWord, description) => (extractedWord, if (description.isEmpty) None else Some(description), Some(Noun), None)
-//      case verbRegex(extractedWord, _, description) => (extractedWord, if (description.isEmpty) None else Some(description), Some(Verb), None)
-//      case onlyWordRegex(extractedWord) => (extractedWord, None, None, None)
-//      case _ => (word, None, None, None)
-      val wordRegex = """([\\w \-]).*""".r
-      val wordRegex(word) = rawWord
+      val wordRegex = """(?U)([\w \-]+) ?.*""".r
+      val adjectiveRegex = """.*\{ adj\. \}.*""".r
+      val maleAdjectiveRegex = """.*\{ adj\. m \}.*""".r
+      val femaleAdjectiveRegex = """.*\{ adj\. f \}.*""".r
+      val maleNounRegex = """.*\{ m \}.*""".r
+      val femaleNounRegex = """.*\{ f \}.*""".r
+      val nounRegex = """.*\{ noun \}.*""".r
+      val verbRegex = """.*\{ vb \}.*""".r
+      val verbTransitiveRegex = """.*\{ v\.t\. \}.*""".r
+      val pronRegex = """.*\{ ?pron\. ?\}.*""".r
 
+      val wordRegex(word) = rawWord
+      val (wordType, gender) = rawWord match {
+        case adjectiveRegex() => (Some(Adjective), None)
+        case maleAdjectiveRegex() => (Some(Adjective), Some(Masculine))
+        case femaleAdjectiveRegex() => (Some(Adjective), Some(Feminine))
+        case maleNounRegex() => (Some(Noun), Some(Masculine))
+        case femaleNounRegex() => (Some(Noun), Some(Feminine))
+        case nounRegex() => (Some(Noun), None)
+        case pronRegex() => (Some(Pronoun), None)
+        case verbRegex() => (Some(Verb), None)
+        case verbTransitiveRegex() => (Some(VerbTransitive), None)
+        case _ => (None, None)
+      }
+      (word, None, wordType, gender)
     }
 
     val (cleanWord, wordDescription, wordType, gender) = formatWord(dirtyWord)
