@@ -14,7 +14,8 @@ object Translator {
 
     val capabilities = DesiredCapabilities.chrome()
     capabilities.setJavascriptEnabled(false)
-    val driver = new RemoteWebDriver(new URL("http://192.168.99.100:4444/wd/hub"), capabilities)
+    //val driver = new RemoteWebDriver(new URL("http://192.168.99.100:4444/wd/hub"), capabilities)
+    val driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), capabilities)
 
     try {
       driver.get(s"http://en.bab.la/dictionary/french-english/$word")
