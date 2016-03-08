@@ -149,9 +149,9 @@ app.controller('MediaCtrl', function ($scope, MediaService, SubtitleService, Sub
   };
 
   $scope.selection = function(subtitle, selected) {
-    TranslationService.query({from: 'french', to: 'english', word: selected.toLowerCase().replace(/ /g , "-")}, function (translation) {
-      $scope.translation = translation;
-      console.log(JSON.stringify(translation, null, 2));
+    TranslationService.query({from: 'french', to: 'english', word: selected.toLowerCase().replace(/ /g , "-")}, function (translations) {
+      $scope.translations = translations;
+      console.log(JSON.stringify(translations, null, 2));
     });
   };
 

@@ -69,3 +69,16 @@ app.directive('selector', function () {
     }
   };
 });
+
+app.directive('translator', function () {
+  return {
+    restrict: 'E',
+    templateUrl: '/assets/templates/word-translation.html',
+    scope: {
+      translations: '='
+    },
+    controller: function($scope) {
+
+    }
+  };
+});

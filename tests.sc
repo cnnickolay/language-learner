@@ -1,10 +1,13 @@
-import utils.Translator.{Male, Noun, Female}
+val x = """ <script type="text/javascript">
+  |//<![CDATA[
+  |
+  |googletag.cmd.push(function() { googletag.display('div-gpt-ad-1333485666094-3'); });
+  |
+  |//]]>
+  </script>""".stripMargin
 
-val maleNounRegex = """.*\{m\}""".r
-val femaleNounRegex = """.*\{f\}""".r
-
-val (wordType, gender) = "word {f}" match {
-  case maleNounRegex() => (Some(Noun), Some(Male))
-  case femaleNounRegex() => (Some(Noun), Some(Female))
-  case _ => (None, None)
-}
+val s: String =
+  """hi there
+    //|<![CDATA[owier
+    |oiwje
+    |//r]]> blabla""".stripMarginxs.replaceAll((?s)"<!\\[CDATA\\[.*?\\]\\]>", "")
