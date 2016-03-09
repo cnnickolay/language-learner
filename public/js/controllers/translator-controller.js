@@ -1,5 +1,5 @@
 'use strict';
 
-app.controller('TranslatorController', function ($scope, $uibModalInstance, translations) {
+app.controller('TranslatorCtrl', function ($scope, $uibModalInstance, translations) {
   $scope.translations = translations;
 });

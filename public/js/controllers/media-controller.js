@@ -4,11 +4,11 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
 
   $scope.mediaId = parseInt($routeParams.mediaId);
 
-  $scope.open = function () {
+  $scope.showTranslation = function () {
     var modalInstance = $uibModal.open({
       animation: false,
       templateUrl: '/assets/templates/word-translation.html',
-      controller: 'TranslatorController',
+      controller: 'TranslatorCtrl',
       size: 'lg',
       resolve: {
         translations: function () {
@@ -21,6 +21,32 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
       $scope.selected = selectedItem;
     }, function () {
       $log.info('Modal dismissed at: ' + new Date());
+    });
+  };
+
+  $scope.addSubtitlesModal = function() {
+    var modalInstance = $uibModal.open({
+      animation: false,
+      templateUrl: '/assets/templates/add-subtitles.html',
+      controller: 'AddSubtitlesCtrl',
+      size: 'lg',
+      resolve: {}
+    });
+
+    modalInstance.result.then(function (subtitles) {
+      var inProgress = 0;
+      _.each(subtitles, function (subtitle) {
+        var Subtitle = new SubtitleService();
+        Subtitle.text = subtitle;
+        Subtitle.mediaId = $scope.mediaId;
+        inProgress++;
+        Subtitle.$save({mediaId: $scope.mediaId}, function() {
+          inProgress--;
+          if (!inProgress) {
+            $scope.refreshSubtitles();
+          }
+        });
+      });
     });
   };
 
@@ -171,7 +197,7 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   $scope.selection = function(subtitle, selected) {
     TranslationService.query({from: 'french', to: 'english', word: selected.toLowerCase().replace(/ /g , "-")}, function (translations) {
       $scope.translations = translations;
-      $scope.open();
+      $scope.showTranslation();
       console.log(JSON.stringify(translations, null, 2));
     });
   };
