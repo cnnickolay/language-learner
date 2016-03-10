@@ -14,7 +14,7 @@ class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
   import driver.api._
   import languageDao.Languages
 
-  def all(): Future[Seq[Media]] = db.run(Medias.result)
+  def all(): Future[Seq[Media]] = db.run(Medias.sortBy(_.name).result)
   def byId(id: Long): Future[Option[Media]] = db.run(Medias.filter(_.id === id).result.headOption)
   def insert(media: Media) = db.run(Medias += media)
   def delete(id: Long) = db.run(Medias.filter(_.id === id).delete)
