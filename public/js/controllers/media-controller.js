@@ -256,7 +256,7 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
       $scope.updateTime($scope.currentSubtitle, $scope.player.timeCallback);
     });
   });
-  $scope.$on('keydown:37', function (o, event) {
+  $scope.$on('keydown:188', function (o, event) {
     $scope.$apply(function() {
       if (event.shiftKey) {
         $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset - 0.1);
@@ -265,7 +265,7 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
       }
     });
   });
-  $scope.$on('keydown:39', function (o, event) {
+  $scope.$on('keydown:190', function (o, event) {
     $scope.$apply(function() {
       if (event.shiftKey) {
         $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset + 0.1);
