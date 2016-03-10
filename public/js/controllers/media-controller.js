@@ -238,8 +238,9 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
       }
     });
   });
-  $scope.$on('keydown:32', function () {
+  $scope.$on('keydown:32', function (o, event) {
     $scope.$apply(function() {
+      event.preventDefault();
       if ($scope.player.isPlaying) {
         $scope.pause();
       } else {
@@ -249,11 +250,13 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   });
   $scope.$on('keydown:191', function () {
     $scope.$apply(function() {
+      event.preventDefault();
       $scope.updateTime($scope.currentSubtitle, $scope.player.timeCallback);
     });
   });
   $scope.$on('keydown:37', function (o, event) {
     $scope.$apply(function() {
+      event.preventDefault();
       if (event.shiftKey) {
         $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset - 0.1);
       } else {
@@ -263,6 +266,7 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   });
   $scope.$on('keydown:39', function (o, event) {
     $scope.$apply(function() {
+      event.preventDefault();
       if (event.shiftKey) {
         $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset + 0.1);
       } else {

@@ -77,11 +77,11 @@ app.directive('keypressEvents', [
   function($document, $rootScope, $window) {
     return {
       restrict: 'A',
-      link: function() {
+      scope: {
+        keysToIgnore: '='
+      },
+      link: function(scope) {
         $window.addEventListener("keydown", function(e) {
-          if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-            e.preventDefault();
-          }
           $rootScope.$broadcast('keydown', e);
           $rootScope.$broadcast('keydown:' + e.which, e);
         }, false);
