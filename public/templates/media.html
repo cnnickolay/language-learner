@@ -1,4 +1,4 @@
-<div ng-keyup="keyPressed(key)">
+<div class="col-md-offset-3 col-md-6">
     <a href="#/" class="btn btn-primary"><span class="glyphicon glyphicon-home"></span></a>
 
     <audio-player is-playing="player.isPlaying" file-url="{{media.mediaUrl}}" time-callback="player.timeCallback" jump-to="player.jumpTo"></audio-player>
@@ -56,14 +56,18 @@
                     </td>
                     <td>
                         <span ng-show="editedSubtitle.id != subtitle.id">{{subtitle.offset}}</span>
-                        <input ng-show="editedSubtitle.id == subtitle.id" ng-model="editedSubtitle.offset" style="width: 3em"/>
+                        <div class="form-group">
+                            <input ng-show="editedSubtitle.id == subtitle.id" ng-model="editedSubtitle.offset" class="form-control"/>
+                        </div>
                     </td>
                     <td>
                         <a ng-show="true" ng-click="updateTime(subtitle, player.timeCallback)" style="cursor: pointer" title="click to update time"><span class="glyphicon glyphicon-hand-left"></span></a>
                     </td>
                     <td selector selection="selection(subtitle, selected)">
                         <span ng-show="editedSubtitle.id != subtitle.id">{{subtitle.text}}</span>
-                        <input ng-show="editedSubtitle.id == subtitle.id" ng-model="editedSubtitle.text" style="width: 50em"/>
+                        <div class="form-group">
+                            <input ng-show="editedSubtitle.id == subtitle.id" ng-model="editedSubtitle.text" class="form-control"/>
+                        </div>
                     </td>
                     <td>
                         <div ng-show="!editedSubtitle" class="btn-group" style="display: flex">
@@ -79,9 +83,9 @@
                 <tr>
                     <td></td>
                     <td></td>
-                    <td><input ng-model="newSubtitle.offset" type="number" style="width: 3em"/></td>
+                    <td><div class="form-group"><input ng-model="newSubtitle.offset" type="number" class="form-control"/></div></td>
                     <td></td>
-                    <td><input ng-model="newSubtitle.text" style="width: 50em"/></td>
+                    <td><div class="form-group"><textarea ng-model="newSubtitle.text" class="form-control" rows="2"></textarea></div></td>
                     <td><button class="btn btn-sm btn-success" ng-click="createSubtitle()"><span class="glyphicon glyphicon-plus"></span></button></td>
                     <td></td>
                 </tr>

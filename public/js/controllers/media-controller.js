@@ -47,6 +47,22 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
     });
   };
 
+  $scope.showYesNoModal = function(positiveFunction) {
+    var modalInstance = $uibModal.open({
+      animation: false,
+      templateUrl: '/assets/templates/yes-no-modal.html',
+      controller: 'YesNoModalCtrl',
+      size: 'sm',
+      resolve: {}
+    });
+
+    modalInstance.result.then(function (result) {
+      if (result) {
+        positiveFunction();
+      }
+    });
+  };
+
   $scope.refresh = function () {
     MediaService.get({id: $scope.mediaId}, function (media) {
       $scope.media = media;
@@ -65,8 +81,10 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   };
 
   $scope.delete = function () {
-    $scope.media.$delete(function () {
-      $location.path('/');
+    $scope.showYesNoModal(function () {
+      $scope.media.$delete(function () {
+        $location.path('/');
+      });
     });
   };
 
@@ -118,9 +136,11 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   };
 
   $scope.deleteSubtitle = function (subtitleId) {
-    SubtitleService.get({mediaId: $scope.mediaId, subtitleId: subtitleId}, function (subtitle) {
-      subtitle.$delete({mediaId: $scope.mediaId, subtitleId: subtitleId}, function () {
-        $scope.refreshSubtitles();
+    $scope.showYesNoModal(function () {
+      SubtitleService.get({mediaId: $scope.mediaId, subtitleId: subtitleId}, function (subtitle) {
+        subtitle.$delete({mediaId: $scope.mediaId, subtitleId: subtitleId}, function () {
+          $scope.refreshSubtitles();
+        });
       });
     });
   };
