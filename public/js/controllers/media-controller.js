@@ -16,12 +16,6 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
         }
       }
     });
-
-    modalInstance.result.then(function (selectedItem) {
-      $scope.selected = selectedItem;
-    }, function () {
-      $log.info('Modal dismissed at: ' + new Date());
-    });
   };
 
   $scope.addSubtitlesModal = function() {
@@ -35,10 +29,13 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
 
     modalInstance.result.then(function (subtitles) {
       var inProgress = 0;
+      var idx = 0;
       _.each(subtitles, function (subtitle) {
         var Subtitle = new SubtitleService();
         Subtitle.text = subtitle;
         Subtitle.mediaId = $scope.mediaId;
+        Subtitle.offset = idx;
+        idx += 0.5;
         inProgress++;
         Subtitle.$save({mediaId: $scope.mediaId}, function() {
           inProgress--;
@@ -76,6 +73,8 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   $scope.refreshSubtitles = function () {
     SubtitleService.query({mediaId: $scope.mediaId}, function (subtitles) {
       $scope.subtitles = subtitles;
+      if (!$scope.currentSubtitle)
+        $scope.currentSubtitle = subtitles[5];
     });
   };
 
@@ -127,8 +126,9 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
     isPlaying: false,
     timeCallback: 0,
     jumpTo: 0,
-    singleSubtitleMode: true
+    singleSubtitleMode: false
   };
+  $scope.followSubtitle = false;
 
   $scope.play = function (subtitle) {
     $scope.player.jumpTo = subtitle.offset;
@@ -142,6 +142,9 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   };
 
   $scope.$watch('player.timeCallback', function (currentTime) {
+    if (!$scope.followSubtitle) {
+      return;
+    }
     var foundSub = _.find($scope.subtitles, function (sub, index) {
       if (index == $scope.subtitles.length - 1 && sub.offset <= currentTime) {
         return sub;
@@ -203,4 +206,43 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   };
 
   $scope.languages = LanguageService.query();
+
+  $scope.$on('keydown:40', function() {
+    _.find($scope.subtitles, function (elt, idx) {
+      if (elt.id == $scope.currentSubtitle.id && idx == $scope.subtitles.length - 1) {
+        return true;
+      } else if (elt.id == $scope.currentSubtitle.id) {
+        $scope.$apply(function () {
+          $scope.currentSubtitle = $scope.subtitles[idx + 1];
+        });
+        return true;
+      }
+    });
+  });
+  $scope.$on('keydown:38', function() {
+    _.find($scope.subtitles, function (elt, idx) {
+      if (elt.id == $scope.currentSubtitle.id && idx == 0) {
+        return true;
+      } else if (elt.id == $scope.currentSubtitle.id) {
+        $scope.$apply(function () {
+          $scope.currentSubtitle = $scope.subtitles[idx - 1];
+        });
+        return true;
+      }
+    });
+  });
+  $scope.$on('keydown:32', function () {
+    $scope.$apply(function() {
+      if ($scope.player.isPlaying) {
+        $scope.pause();
+      } else {
+        $scope.play($scope.currentSubtitle);
+      }
+    });
+  });
+  $scope.$on('keydown:191', function () {
+    $scope.$apply(function() {
+      $scope.updateTime($scope.currentSubtitle);
+    });
+  });
 });

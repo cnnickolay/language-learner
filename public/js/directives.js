@@ -70,15 +70,22 @@ app.directive('selector', function () {
   };
 });
 
-app.directive('translator', function () {
-  return {
-    restrict: 'E',
-    templateUrl: '/assets/templates/word-translation.html',
-    scope: {
-      translations: '='
-    },
-    controller: function($scope) {
-
-    }
-  };
-});
+app.directive('keypressEvents', [
+  '$document',
+  '$rootScope',
+  '$window',
+  function($document, $rootScope, $window) {
+    return {
+      restrict: 'A',
+      link: function() {
+        $window.addEventListener("keydown", function(e) {
+          if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+          }
+          $rootScope.$broadcast('keydown', e);
+          $rootScope.$broadcast('keydown:' + e.which, e);
+        }, false);
+      }
+    };
+  }
+]);

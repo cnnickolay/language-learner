@@ -4,11 +4,16 @@
     </div>
 
     <div class="modal-body">
-        <textarea ng-model="subtitles"></textarea>
+        <div class="form-group">
+            <label for="subtitles">Enter subtitles:</label>
+            <textarea id="subtitles" class="form-control" ng-model="subtitles" rows="15" autofocus></textarea>
+        </div>
     </div>
 
     <div class="modal-footer">
-        <button ng-click="add()">Add</button>
-        <button ng-click="cancel()">Cancel</button>
+        <div class="btn-group">
+            <button class="btn btn-success" ng-click="add()">Add subtitles</button>
+            <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+        </div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-<div>
+<div ng-keyup="keyPressed(key)">
     <a href="#/" class="btn btn-primary"><span class="glyphicon glyphicon-home"></span></a>
 
     <audio-player is-playing="player.isPlaying" file-url="{{media.mediaUrl}}" time-callback="player.timeCallback" jump-to="player.jumpTo"></audio-player>
@@ -19,6 +19,7 @@
         <div>
             <input ng-model="player.timeCallback"/>
             <label>Single sub play mode: <input type="checkbox" ng-model="player.singleSubtitleMode"/></label>
+            <label>Follow subtitle while playing: <input type="checkbox" ng-model="followSubtitle"/></label>
             <button ng-hide="player.isPlaying" ng-click="playFromTime(player.timeCallback)" class="btn btn-sm btn-circle btn-default"><span class="glyphicon glyphicon-play"></span></button>
             <button ng-show="player.isPlaying" ng-click="player.isPlaying = false" class="btn btn-sm btn-circle btn-default"><span class="glyphicon glyphicon-pause"></span></button>
         </div>
