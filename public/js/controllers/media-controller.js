@@ -73,8 +73,15 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   $scope.refreshSubtitles = function () {
     SubtitleService.query({mediaId: $scope.mediaId}, function (subtitles) {
       $scope.subtitles = subtitles;
-      if (!$scope.currentSubtitle)
+      if (!$scope.currentSubtitle) {
         $scope.currentSubtitle = subtitles[5];
+      } else {
+        $scope.currentSubtitle = _.find($scope.subtitles, function(elt) {
+          if (elt.id == $scope.currentSubtitle.id) {
+            return true;
+          }
+        });
+      }
     });
   };
 
@@ -173,9 +180,9 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
     return false;
   };
 
-  $scope.updateTime = function (subtitle) { // updates time of subtitle by clicking it
+  $scope.updateTime = function (subtitle, newOffset) { // updates time of subtitle by clicking it
     SubtitleService.get({mediaId: $scope.mediaId, subtitleId: subtitle.id}, function (subtitle) {
-      subtitle.offset = $scope.player.timeCallback;
+      subtitle.offset = newOffset;
       SubtitleService.update({mediaId: $scope.mediaId, subtitleId: subtitle.id}, subtitle, function () {
         $scope.refreshSubtitles();
       });
@@ -242,7 +249,25 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   });
   $scope.$on('keydown:191', function () {
     $scope.$apply(function() {
-      $scope.updateTime($scope.currentSubtitle);
+      $scope.updateTime($scope.currentSubtitle, $scope.player.timeCallback);
+    });
+  });
+  $scope.$on('keydown:37', function (o, event) {
+    $scope.$apply(function() {
+      if (event.shiftKey) {
+        $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset - 0.1);
+      } else {
+        $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset - 1);
+      }
+    });
+  });
+  $scope.$on('keydown:39', function (o, event) {
+    $scope.$apply(function() {
+      if (event.shiftKey) {
+        $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset + 0.1);
+      } else {
+        $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset + 1);
+      }
     });
   });
 });

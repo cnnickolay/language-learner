@@ -59,7 +59,7 @@
                         <input ng-show="editedSubtitle.id == subtitle.id" ng-model="editedSubtitle.offset" style="width: 3em"/>
                     </td>
                     <td>
-                        <a ng-show="true" ng-click="updateTime(subtitle)" style="cursor: pointer" title="click to update time"><span class="glyphicon glyphicon-hand-left"></span></a>
+                        <a ng-show="true" ng-click="updateTime(subtitle, player.timeCallback)" style="cursor: pointer" title="click to update time"><span class="glyphicon glyphicon-hand-left"></span></a>
                     </td>
                     <td selector selection="selection(subtitle, selected)">
                         <span ng-show="editedSubtitle.id != subtitle.id">{{subtitle.text}}</span>
