@@ -214,8 +214,9 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
 
   $scope.languages = LanguageService.query();
 
-  $scope.$on('keydown:40', function() {
+  $scope.$on('keydown:40', function(o, e) {
     _.find($scope.subtitles, function (elt, idx) {
+      e.preventDefault();
       if (elt.id == $scope.currentSubtitle.id && idx == $scope.subtitles.length - 1) {
         return true;
       } else if (elt.id == $scope.currentSubtitle.id) {
@@ -226,7 +227,8 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
       }
     });
   });
-  $scope.$on('keydown:38', function() {
+  $scope.$on('keydown:38', function(o, e) {
+    e.preventDefault();
     _.find($scope.subtitles, function (elt, idx) {
       if (elt.id == $scope.currentSubtitle.id && idx == 0) {
         return true;
@@ -238,9 +240,9 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
       }
     });
   });
-  $scope.$on('keydown:32', function (o, event) {
+  $scope.$on('keydown:32', function (o, e) {
     $scope.$apply(function() {
-      event.preventDefault();
+      e.preventDefault();
       if ($scope.player.isPlaying) {
         $scope.pause();
       } else {
@@ -256,7 +258,6 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   });
   $scope.$on('keydown:37', function (o, event) {
     $scope.$apply(function() {
-      event.preventDefault();
       if (event.shiftKey) {
         $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset - 0.1);
       } else {
@@ -266,7 +267,6 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   });
   $scope.$on('keydown:39', function (o, event) {
     $scope.$apply(function() {
-      event.preventDefault();
       if (event.shiftKey) {
         $scope.updateTime($scope.currentSubtitle, $scope.currentSubtitle.offset + 0.1);
       } else {
