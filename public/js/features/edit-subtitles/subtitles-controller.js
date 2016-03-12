@@ -1,66 +1,17 @@
 'use strict';
 
-app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, SubtitleService, SubtitleSrtUploadService, LanguageService, TranslationService, $routeParams, $location) {
+app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, SubtitleService, SubtitleSrtUploadService,
+                                         LanguageService, TranslationService, YesNoModalService, AddSubtitlesService,
+                                         TranslationModalService, $routeParams, $location) {
 
   $scope.mediaId = parseInt($routeParams.mediaId);
 
-  $scope.showTranslation = function () {
-    var modalInstance = $uibModal.open({
-      animation: false,
-      templateUrl: '/assets/templates/word-translation.html',
-      controller: 'TranslatorCtrl',
-      size: 'lg',
-      resolve: {
-        translations: function () {
-          return $scope.translations;
-        }
-      }
-    });
+  $scope.showTranslation = function() {
+    TranslationModalService.showDialog($scope.translations);
   };
 
   $scope.addSubtitlesModal = function() {
-    var modalInstance = $uibModal.open({
-      animation: false,
-      templateUrl: '/assets/templates/add-subtitles.html',
-      controller: 'AddSubtitlesCtrl',
-      size: 'lg',
-      resolve: {}
-    });
-
-    modalInstance.result.then(function (subtitles) {
-      var inProgress = 0;
-      var idx = 0;
-      _.each(subtitles, function (subtitle) {
-        var Subtitle = new SubtitleService();
-        Subtitle.text = subtitle;
-        Subtitle.mediaId = $scope.mediaId;
-        Subtitle.offset = idx;
-        idx += 0.5;
-        inProgress++;
-        Subtitle.$save({mediaId: $scope.mediaId}, function() {
-          inProgress--;
-          if (!inProgress) {
-            $scope.refreshSubtitles();
-          }
-        });
-      });
-    });
-  };
-
-  $scope.showYesNoModal = function(positiveFunction) {
-    var modalInstance = $uibModal.open({
-      animation: false,
-      templateUrl: '/assets/templates/yes-no-modal.html',
-      controller: 'YesNoModalCtrl',
-      size: 'sm',
-      resolve: {}
-    });
-
-    modalInstance.result.then(function (result) {
-      if (result) {
-        positiveFunction();
-      }
-    });
+    AddSubtitlesService.showDialog();
   };
 
   $scope.refresh = function () {
@@ -81,7 +32,7 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   };
 
   $scope.delete = function () {
-    $scope.showYesNoModal(function () {
+    YesNoModalService.showDialog("Are you sure you want to delete this media?", function () {
       $scope.media.$delete(function () {
         $location.path('/');
       });
@@ -136,7 +87,7 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
   };
 
   $scope.deleteSubtitle = function (subtitleId) {
-    $scope.showYesNoModal(function () {
+    YesNoModalService.showDialog("Are you sure you want to delete subtitle?", function () {
       SubtitleService.get({mediaId: $scope.mediaId, subtitleId: subtitleId}, function (subtitle) {
         subtitle.$delete({mediaId: $scope.mediaId, subtitleId: subtitleId}, function () {
           $scope.refreshSubtitles();
@@ -228,7 +179,6 @@ app.controller('MediaCtrl', function ($scope, $log, $uibModal, MediaService, Sub
     TranslationService.query({from: 'french', to: 'english', word: selected.toLowerCase().replace(/ /g , "-")}, function (translations) {
       $scope.translations = translations;
       $scope.showTranslation();
-      console.log(JSON.stringify(translations, null, 2));
     });
   };
 

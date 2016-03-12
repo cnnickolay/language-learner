@@ -1,15 +1,9 @@
 <div>
     <span>{{test}}</span>
 
-    <audio-player is-playing="player.isPlaying" file-url="{{player.fileUrl}}" time-callback="player.timeCallback" jump-to="player.jumpTo"></audio-player>
-
     <table class="table">
         <tr ng-repeat="media in medias" ng-init="augmentMedia(media)">
             <td>{{media.id}}</td>
-            <td>
-                <button ng-hide="player.isPlaying && player.fileUrl == media.mediaUrl" ng-click="play(media)" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-play"></span></button>
-                <button ng-show="player.isPlaying && player.fileUrl == media.mediaUrl" ng-click="pause(media)" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-pause"></span></button>
-            </td>
             <td>{{media.name}}</td>
             <td><a href="{{media.mediaUrl}}">{{media.mediaUrl}}</a></td>
             <td><span>{{media.language.name}}</span></td>

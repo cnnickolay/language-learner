@@ -1,6 +1,8 @@
 'use strict';
 
-app.controller('YesNoModalCtrl', function ($scope, $uibModalInstance) {
+app.controller('YesNoModalCtrl', function ($scope, $uibModalInstance, question) {
+
+  $scope.question = question;
 
   $scope.yes = function() {
     $uibModalInstance.close(true);

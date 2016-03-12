@@ -5,3 +5,7 @@ app.factory('SubtitleService', function ($resource) {
     {'update': {method: 'PUT'}}
   );
 });
+
+app.factory('SubtitleSrtUploadService', function ($resource) {
+  return $resource('/medias/:mediaId/subtitles/srt', {mediaId: '@mediaId', subtitleId: '@subtitleId'});
+});
