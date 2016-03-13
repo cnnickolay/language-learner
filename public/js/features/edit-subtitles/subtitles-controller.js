@@ -15,6 +15,7 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
     subtitles: [],
     languages: LanguageService.query(),
     currentSubtitle: null,
+    currentPlaying: null,
     newSubtitle: new SubtitleService()
   };
   $scope.data = data;
@@ -24,6 +25,19 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
   };
   var setSubtitles = function(subtitles) {
     data.subtitles = subtitles;
+  };
+  var setCurrentSubtitle = function (currentSubtitles) {
+    data.currentSubtitle = currentSubtitles;
+    $location.search({sub: data.currentSubtitle.id});
+  };
+
+  //////////////
+  var findSubtitleById = function(subtitles, id) {
+    return _.find(subtitles, function (elt) {
+      if (elt.id == id) {
+        return true;
+      }
+    });
   };
 
   var showTranslation = function() {
@@ -44,13 +58,13 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
     SubtitleService.query({mediaId: data.mediaId}, function (subtitles) {
       setSubtitles(subtitles);
       if (!data.currentSubtitle) {
-        data.currentSubtitle = subtitles[0];
+        if ($location.search().sub) {
+          setCurrentSubtitle(findSubtitleById(subtitles, $location.search().sub));
+        } else {
+          setCurrentSubtitle(subtitles[0]);
+        }
       } else {
-        data.currentSubtitle = _.find(data.subtitles, function(elt) {
-          if (elt.id == data.currentSubtitle.id) {
-            return true;
-          }
-        });
+        setCurrentSubtitle(findSubtitleById(subtitles, data.currentSubtitle.id));
       }
     });
   };
@@ -67,6 +81,28 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
         showTranslation();
       });
     }
+  };
+
+  var goToNextSubtitleDown = function(data) {
+    _.find(data.subtitles, function (elt, idx) {
+      if (elt.id == data.currentSubtitle.id && idx == data.subtitles.length - 1) {
+        return true;
+      } else if (elt.id == data.currentSubtitle.id) {
+        setCurrentSubtitle(data.subtitles[idx + 1]);
+        return true;
+      }
+    });
+  };
+
+  var goToPreviousSubtitle = function goToPreviousSubtitle(data) {
+    _.find(data.subtitles, function (elt, idx) {
+      if (elt.id == data.currentSubtitle.id && idx == 0) {
+        return true;
+      } else if (elt.id == data.currentSubtitle.id) {
+        setCurrentSubtitle(data.subtitles[idx - 1]);
+        return true;
+      }
+    });
   };
 
   //////////////// functions for UI
@@ -109,7 +145,7 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
 
   $scope.play = function (subtitle) {
     data.jumpTo = subtitle.offset;
-    data.currentSubtitle = subtitle;
+    data.currentPlaying = subtitle;
     data.isPlaying = true;
   };
 
@@ -154,7 +190,7 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
   };
 
   $scope.isPlaying = function (sub) {
-    if (data.currentSubtitle && sub.id == data.currentSubtitle.id && data.isPlaying) {
+    if (data.currentPlaying && sub.id == data.currentPlaying.id && data.isPlaying) {
       return true;
     }
     return false;
@@ -175,10 +211,7 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
     });
   };
 
-  $scope.$watch('player.timeCallback', function (currentTime) {
-    if (!data.followSubtitle) {
-      return;
-    }
+  $scope.$watch('data.timeCallback', function (currentTime) {
     var foundSub = _.find(data.subtitles, function (sub, index) {
       if (index == data.subtitles.length - 1 && sub.offset <= currentTime) {
         return sub;
@@ -186,12 +219,15 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
         return sub;
       }
     });
-    if (foundSub && (!data.currentSubtitle || foundSub.id != data.currentSubtitle.id)) {
+    if (foundSub && (!data.currentPlaying || foundSub.id != data.currentPlaying.id)) {
       if (data.singleSubtitleMode) {
         $scope.pause();
-        data.jumpTo = data.currentSubtitle.offset;
+        data.jumpTo = data.currentPlaying.offset;
       } else {
-        data.currentSubtitle = foundSub;
+        data.currentPlaying = foundSub;
+        if (data.followSubtitle) {
+          setCurrentSubtitle(data.currentPlaying);
+        }
       }
     }
   });
@@ -210,7 +246,9 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
           break;
         case KEY_CODES.SPACE:
           event.preventDefault();
-          if (data.isPlaying) { $scope.pause(); } else { $scope.play(data.currentSubtitle); }
+          if (data.isPlaying && data.currentSubtitle.id == data.currentPlaying.id) { $scope.pause(); }
+          else if (data.isPlaying && data.currentSubtitle.id != data.currentPlaying.id) { $scope.play(data.currentSubtitle); }
+          else if (!data.isPlaying) { $scope.play(data.currentSubtitle); }
           break;
         case KEY_CODES.ARROW_UP:
           event.preventDefault();
@@ -223,6 +261,7 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
       }
     });
   });
+
   //////////////////
 
   initializeNewSubtitle();
@@ -230,25 +269,3 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
   refreshSubtitles();
 
 });
-
-
-function goToNextSubtitleDown(data) {
-  _.find(data.subtitles, function (elt, idx) {
-    if (elt.id == data.currentSubtitle.id && idx == data.subtitles.length - 1) {
-      return true;
-    } else if (elt.id == data.currentSubtitle.id) {
-      data.currentSubtitle = data.subtitles[idx + 1];
-      return true;
-    }
-  });
-}
-function goToPreviousSubtitle(data) {
-  _.find(data.subtitles, function (elt, idx) {
-    if (elt.id == data.currentSubtitle.id && idx == 0) {
-      return true;
-    } else if (elt.id == data.currentSubtitle.id) {
-      data.currentSubtitle = data.subtitles[idx - 1];
-      return true;
-    }
-  });
-}

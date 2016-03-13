@@ -9,7 +9,8 @@ var app = angular.module('lang', ['ngResource', 'ngRoute', 'ui.bootstrap'])
       })
       .when('/media/:mediaId', {
         templateUrl: '/assets/js/features/edit-subtitles/subtitles.html',
-        controller: 'SubtitleCtrl'
+        controller: 'SubtitleCtrl',
+        reloadOnSearch: false
       });
   });
 

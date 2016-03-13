@@ -58,7 +58,7 @@ app.directive('selector', function () {
     scope: {
       selection: '&'
     },
-    link: function(scope, element, attributes) {
+    link: function (scope, element, attributes) {
       element.on('mouseup', function (e) {
         var selected = window.getSelection().toString();
         if (selected) {
@@ -73,14 +73,14 @@ app.directive('keypressEvents', [
   '$document',
   '$rootScope',
   '$window',
-  function($document, $rootScope, $window) {
+  function ($document, $rootScope, $window) {
     return {
       restrict: 'A',
       scope: {
         keysToIgnore: '='
       },
-      link: function(scope) {
-        $window.addEventListener("keydown", function(e) {
+      link: function (scope) {
+        $window.addEventListener("keydown", function (e) {
           $rootScope.$broadcast('keydown', e);
           $rootScope.$broadcast('keydown:' + e.which, e);
         }, false);
@@ -95,12 +95,12 @@ app.directive('readFile', function () {
     scope: {
       fileSelected: '='
     },
-    link: function(scope, element) {
+    link: function (scope, element) {
       $(element[0]).change(function () {
         var file = element[0].files[0];
         var reader = new FileReader();
         reader.onloadend = function (e) {
-          scope.$apply(function() {
+          scope.$apply(function () {
             scope.fileSelected = e.target.result;
           });
         };
@@ -108,4 +108,29 @@ app.directive('readFile', function () {
       });
     }
   }
+});
+
+app.directive('autoScroll', function () {
+  return {
+    restrict: 'A',
+    scope: {
+      elementId: '@'
+    },
+    link: function (scope) {
+      scope.$watch('elementId', function (elementId) {
+        var element = $('#' + elementId);
+        if (!element || !element.offset()) {
+          return;
+        }
+        var offset = element.offset().top;
+        var visible_area_start = $(window).scrollTop();
+        var visible_area_end = visible_area_start + window.innerHeight;
+
+        if (offset < visible_area_start || offset > visible_area_end) {
+          // Not in view so scroll to it
+          $('html,body').animate({scrollTop: offset - window.innerHeight / 3}, 1000);
+        }
+      });
+    }
+  };
 });
