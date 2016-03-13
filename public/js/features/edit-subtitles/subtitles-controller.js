@@ -147,6 +147,9 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
     data.jumpTo = subtitle.offset;
     data.currentPlaying = subtitle;
     data.isPlaying = true;
+    if (data.followSubtitle) {
+      data.currentSubtitle = data.currentPlaying;
+    }
   };
 
   $scope.pause = function () {
