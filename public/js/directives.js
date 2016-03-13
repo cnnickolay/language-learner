@@ -89,3 +89,24 @@ app.directive('keypressEvents', [
     };
   }
 ]);
+
+app.directive('readFile', function () {
+  return {
+    restrict: 'A',
+    scope: {
+      fileSelected: '='
+    },
+    link: function(scope, element) {
+      $(element[0]).change(function () {
+        var file = element[0].files[0];
+        var reader = new FileReader();
+        reader.onloadend = function (e) {
+          scope.$apply(function() {
+            scope.fileSelected = e.target.result;
+          });
+        };
+        reader.readAsBinaryString(file);
+      });
+    }
+  }
+});

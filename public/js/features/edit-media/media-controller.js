@@ -29,7 +29,7 @@ app.controller('MediaCtrl', function ($scope, MediaService, LanguageService) {
   };
 
   $scope.augmentMedia = function(media) {
-    LanguageService.get({id: media.languageId}, function(language) {
+    LanguageService.getOne({id: media.languageId}, function(language) {
       media.language = language;
     });
   };

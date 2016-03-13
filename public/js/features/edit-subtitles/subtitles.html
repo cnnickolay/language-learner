@@ -1,7 +1,7 @@
 <div class="col-md-offset-3 col-md-6">
     <a href="#/" class="btn btn-primary"><span class="glyphicon glyphicon-home"></span></a>
 
-    <audio-player is-playing="player.isPlaying" file-url="{{media.mediaUrl}}" time-callback="player.timeCallback" jump-to="player.jumpTo"></audio-player>
+    <audio-player is-playing="data.isPlaying" file-url="{{data.media.mediaUrl}}" time-callback="data.timeCallback" jump-to="data.jumpTo"></audio-player>
 
     <button type="button" class="btn btn-default" ng-click="addSubtitlesModal()">Add subtitles</button>
 
@@ -9,19 +9,19 @@
         <h3>Editing media item {{media.id}}</h3>
 
         <ul class="list-inline">
-            <li>Media name: <input ng-model="media.name"/></li>
-            <li>Media url: <input ng-model="media.mediaUrl"/></li>
-            <li><select ng-options="l.name for l in languages track by l.id" ng-model="language" ng-change="media.languageId = language.id"></select></li>
+            <li>Media name: <input ng-model="data.media.name"/></li>
+            <li>Media url: <input ng-model="data.media.mediaUrl"/></li>
+            <li><select ng-options="l as l.name for l in data.languages track by l.id" ng-model="data.language" ng-change="data.media.languageId = data.language.id"></select></li>
             <li><button class="btn btn-sm btn-info" ng-click="update()">Save</button>
                 <button class="btn btn-sm btn-danger" ng-click="delete()"><span class="glyphicon glyphicon-trash"></span></button></li>
         </ul>
 
         <div>
-            <input ng-model="player.timeCallback"/>
-            <label>Single sub play mode: <input type="checkbox" ng-model="player.singleSubtitleMode"/></label>
-            <label>Follow subtitle while playing: <input type="checkbox" ng-model="followSubtitle"/></label>
-            <button ng-hide="player.isPlaying" ng-click="playFromTime(player.timeCallback)" class="btn btn-sm btn-circle btn-default"><span class="glyphicon glyphicon-play"></span></button>
-            <button ng-show="player.isPlaying" ng-click="player.isPlaying = false" class="btn btn-sm btn-circle btn-default"><span class="glyphicon glyphicon-pause"></span></button>
+            <input ng-model="data.timeCallback"/>
+            <label>Single sub play mode: <input type="checkbox" ng-model="data.singleSubtitleMode"/></label>
+            <label>Follow subtitle while playing: <input type="checkbox" ng-model="data.followSubtitle"/></label>
+            <button ng-hide="data.isPlaying" ng-click="playFromTime(data.timeCallback)" class="btn btn-sm btn-circle btn-default"><span class="glyphicon glyphicon-play"></span></button>
+            <button ng-show="data.isPlaying" ng-click="data.isPlaying = false" class="btn btn-sm btn-circle btn-default"><span class="glyphicon glyphicon-pause"></span></button>
         </div>
 
         <div>
@@ -30,7 +30,7 @@
                     <span>Upload subtitles file</span>
                 </div>
                 <div class="panel-body">
-                    <input type="file" id="srtFile" name="file"/>
+                    <input read-file file-selected="data.fileSelected" type="file" id="srtFile" name="file"/>
                     <button ng-click="add()">Add</button>
                 </div>
             </div>
@@ -48,11 +48,11 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="subtitle in subtitles" ng-class="{success: subtitle.id == currentSubtitle.id}">
+                <tr ng-repeat="subtitle in data.subtitles" ng-class="{success: subtitle.id == data.currentSubtitle.id}">
                     <td>{{$index + 1}}</td>
                     <td>
-                        <button ng-hide="isThisSubPlaying(subtitle)" ng-click="play(subtitle)" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-play"></span></button>
-                        <button ng-show="isThisSubPlaying(subtitle)" ng-click="pause()" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-pause"></span></button>
+                        <button ng-hide="isPlaying(subtitle)" ng-click="play(subtitle)" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-play"></span></button>
+                        <button ng-show="isPlaying(subtitle)" ng-click="pause()" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-pause"></span></button>
                     </td>
                     <td>
                         <span ng-show="editedSubtitle.id != subtitle.id">{{subtitle.offset}}</span>
@@ -61,7 +61,7 @@
                         </div>
                     </td>
                     <td>
-                        <a ng-show="true" ng-click="updateTime(subtitle, player.timeCallback)" style="cursor: pointer" title="click to update time"><span class="glyphicon glyphicon-hand-left"></span></a>
+                        <a ng-show="true" ng-click="updateTime(subtitle, data.timeCallback)" style="cursor: pointer" title="click to update time"><span class="glyphicon glyphicon-hand-left"></span></a>
                     </td>
                     <td selector selection="selection(subtitle, selected)">
                         <span ng-show="editedSubtitle.id != subtitle.id">{{subtitle.text}}</span>
@@ -83,9 +83,9 @@
                 <tr>
                     <td></td>
                     <td></td>
-                    <td><div class="form-group"><input ng-model="newSubtitle.offset" type="number" class="form-control"/></div></td>
+                    <td><div class="form-group"><input ng-model="data.newSubtitle.offset" type="number" class="form-control"/></div></td>
                     <td></td>
-                    <td><div class="form-group"><textarea ng-model="newSubtitle.text" class="form-control" rows="2"></textarea></div></td>
+                    <td><div class="form-group"><textarea ng-model="data.newSubtitle.text" class="form-control" rows="2"></textarea></div></td>
                     <td><button class="btn btn-sm btn-success" ng-click="createSubtitle()"><span class="glyphicon glyphicon-plus"></span></button></td>
                     <td></td>
                 </tr>

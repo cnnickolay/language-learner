@@ -1,7 +1,7 @@
 'use strict';
 
 var app = angular.module('lang', ['ngResource', 'ngRoute', 'ui.bootstrap'])
-  .config(function($routeProvider, $locationProvider) {
+  .config(function($routeProvider) {
     $routeProvider
       .when('/', {
         templateUrl: '/assets/js/features/edit-media/media.html',
@@ -13,3 +13,11 @@ var app = angular.module('lang', ['ngResource', 'ngRoute', 'ui.bootstrap'])
       });
   });
 
+app.constant("KEY_CODES", {
+  ARROW_UP: 38,
+  ARROW_DOWN: 40,
+  MINUS: 189,
+  PLUS: 187,
+  SPACE: 32,
+  SLASH: 191
+});
