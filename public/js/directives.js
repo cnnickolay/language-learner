@@ -62,8 +62,7 @@ app.directive('selector', function () {
       element.on('mouseup', function (e) {
         var selected = window.getSelection().toString();
         if (selected) {
-          scope.selection({selected: selected});
-          //scope.$apply();
+          scope.selection({selected: selected, event: e});
         }
       });
     }

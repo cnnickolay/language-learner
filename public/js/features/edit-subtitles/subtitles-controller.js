@@ -60,11 +60,13 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
     data.newSubtitle.mediaId = data.mediaId;
   };
 
-  $scope.selection = function(subtitle, selected) {
-    TranslationService.query({from: 'french', to: 'english', word: selected.toLowerCase().replace(/ /g , "-")}, function (translations) {
-      $scope.translations = translations;
-      showTranslation();
-    });
+  $scope.selection = function(subtitle, selected, event) {
+    if (event.altKey) {
+      TranslationService.query({from: 'french', to: 'english', word: selected.toLowerCase().replace(/ /g , "-")}, function (translations) {
+        $scope.translations = translations;
+        showTranslation();
+      });
+    }
   };
 
   //////////////// functions for UI
@@ -194,63 +196,30 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
     }
   });
 
-  $scope.$on('keydown:' + KEY_CODES.ARROW_DOWN, function(o, e) {
-    $scope.$apply(function () {
-      _.find(data.subtitles, function (elt, idx) {
-        e.preventDefault();
-        if (elt.id == data.currentSubtitle.id && idx == data.subtitles.length - 1) {
-          return true;
-        } else if (elt.id == data.currentSubtitle.id) {
-          data.currentSubtitle = data.subtitles[idx + 1];
-          return true;
-        }
-      });
-    });
-  });
-  $scope.$on('keydown:' + KEY_CODES.ARROW_UP, function(o, e) {
-    $scope.$apply(function () {
-      e.preventDefault();
-      _.find(data.subtitles, function (elt, idx) {
-        if (elt.id == data.currentSubtitle.id && idx == 0) {
-          return true;
-        } else if (elt.id == data.currentSubtitle.id) {
-          data.currentSubtitle = data.subtitles[idx - 1];
-          return true;
-        }
-      });
-    });
-  });
-  $scope.$on('keydown:' + KEY_CODES.SPACE, function (o, e) {
+  $scope.$on('keydown', function (o, event) {
     $scope.$apply(function() {
-      e.preventDefault();
-      if (data.isPlaying) {
-        $scope.pause();
-      } else {
-        $scope.play(data.currentSubtitle);
-      }
-    });
-  });
-  $scope.$on('keydown:' + KEY_CODES.SLASH, function () {
-    $scope.$apply(function() {
-      event.preventDefault();
-      $scope.updateTime(data.currentSubtitle, data.timeCallback);
-    });
-  });
-  $scope.$on('keydown:' + KEY_CODES.MINUS, function (o, event) {
-    $scope.$apply(function() {
-      if (event.shiftKey) {
-        $scope.updateTime(data.currentSubtitle, data.currentSubtitle.offset - 0.1);
-      } else {
-        $scope.updateTime(data.currentSubtitle, data.currentSubtitle.offset - 1);
-      }
-    });
-  });
-  $scope.$on('keydown:' + KEY_CODES.PLUS, function (o, event) {
-    $scope.$apply(function() {
-      if (event.shiftKey) {
-        $scope.updateTime(data.currentSubtitle, data.currentSubtitle.offset + 0.1);
-      } else {
-        $scope.updateTime(data.currentSubtitle, data.currentSubtitle.offset + 1);
+      var offset;
+      switch (event.which) {
+        case KEY_CODES.MINUS:
+          offset = data.currentSubtitle.offset - (event.shiftKey ? 0.1 : 1);
+        case KEY_CODES.PLUS:
+          offset = offset || (data.currentSubtitle.offset + (event.shiftKey ? 0.1 : 1));
+        case KEY_CODES.SLASH:
+          offset = offset || data.timeCallback;
+          $scope.updateTime(data.currentSubtitle, offset);
+          break;
+        case KEY_CODES.SPACE:
+          event.preventDefault();
+          if (data.isPlaying) { $scope.pause(); } else { $scope.play(data.currentSubtitle); }
+          break;
+        case KEY_CODES.ARROW_UP:
+          event.preventDefault();
+          goToPreviousSubtitle(data);
+          break;
+        case KEY_CODES.ARROW_DOWN:
+          event.preventDefault();
+          goToNextSubtitleDown(data);
+          break;
       }
     });
   });
@@ -261,3 +230,25 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
   refreshSubtitles();
 
 });
+
+
+function goToNextSubtitleDown(data) {
+  _.find(data.subtitles, function (elt, idx) {
+    if (elt.id == data.currentSubtitle.id && idx == data.subtitles.length - 1) {
+      return true;
+    } else if (elt.id == data.currentSubtitle.id) {
+      data.currentSubtitle = data.subtitles[idx + 1];
+      return true;
+    }
+  });
+}
+function goToPreviousSubtitle(data) {
+  _.find(data.subtitles, function (elt, idx) {
+    if (elt.id == data.currentSubtitle.id && idx == 0) {
+      return true;
+    } else if (elt.id == data.currentSubtitle.id) {
+      data.currentSubtitle = data.subtitles[idx - 1];
+      return true;
+    }
+  });
+}

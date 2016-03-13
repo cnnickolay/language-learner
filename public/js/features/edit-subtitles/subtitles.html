@@ -48,7 +48,16 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="subtitle in data.subtitles" ng-class="{success: subtitle.id == data.currentSubtitle.id}">
+                <tr>
+                    <td><div class="form-group-sm"><input class="form-control" ng-model="data.filter.pos" placeholder="1, 2-10"/></div></td>
+                    <td></td>
+                    <td><div class="form-group-sm"><input class="form-control" ng-model="data.filter.offset" placeholder="time"/></div></td>
+                    <td></td>
+                    <td><div class="form-group-sm"><input class="form-control" ng-model="data.filter.text" placeholder="text"/></div></td>
+                    <td></td>
+                </tr>
+                <tr ng-repeat="subtitle in data.subtitles | filterSubtitleByName: data.filter.pos:data.filter.offset:data.filter.text"
+                    ng-class="{success: subtitle.id == data.currentSubtitle.id}">
                     <td>{{$index + 1}}</td>
                     <td>
                         <button ng-hide="isPlaying(subtitle)" ng-click="play(subtitle)" class="btn btn-sm btn-default btn-circle"><span class="glyphicon glyphicon-play"></span></button>
@@ -63,7 +72,7 @@
                     <td>
                         <a ng-show="true" ng-click="updateTime(subtitle, data.timeCallback)" style="cursor: pointer" title="click to update time"><span class="glyphicon glyphicon-hand-left"></span></a>
                     </td>
-                    <td selector selection="selection(subtitle, selected)">
+                    <td selector selection="selection(subtitle, selected, event)">
                         <span ng-show="editedSubtitle.id != subtitle.id">{{subtitle.text}}</span>
                         <div class="form-group">
                             <input ng-show="editedSubtitle.id == subtitle.id" ng-model="editedSubtitle.text" class="form-control"/>
