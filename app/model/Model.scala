@@ -6,23 +6,32 @@ import play.api.libs.json._
 
 object Model {
 
-  case class Media(id: Option[Long], name: String, mediaUrl: String, languageId: Int)
-  case class Subtitle(id: Option[Long], offset: Option[BigDecimal], text: String, mediaId: Long)
-  case class SubtitlesSrtRaw(mediaId: Long, srt: String)
+  case class MediaGroup(id: Option[Long], name: String, description: Option[String], languageId: Int)
+  case class Media(id: Option[Long], name: String, mediaUrl: String, mediaGroupId: Option[Long])
+  case class Subtitle(id: Option[Long], offset: Option[BigDecimal], text: String, mediaId: Option[Long])
   case class Language(id: Option[Int], name: String)
+
+  case class SubtitlesSrtRaw(mediaId: Long, srt: String)
+
+  implicit val mediaGroupFormat: Format[MediaGroup] = (
+    (__ \ "id").formatNullable[Long] and
+    (__ \ "name").format[String] and
+    (__ \ "description").formatNullable[String] and
+    (__ \ "languageId").format[Int]
+  )(MediaGroup.apply, unlift(MediaGroup.unapply))
 
   implicit val mediaFormat: Format[Media] = (
     (__ \ "id").formatNullable[Long] and
     (__ \ "name").format[String] and
     (__ \ "mediaUrl").format[String] and
-    (__ \ "languageId").format[Int]
+    (__ \ "mediaGroupId").formatNullable[Long]
   )(Media.apply, unlift(Media.unapply))
 
   implicit val subtitleFormat: Format[Subtitle] = (
     (__ \ "id").formatNullable[Long] and
     (__ \ "offset").formatNullable[BigDecimal] and
     (__ \ "text").format[String] and
-    (__ \ "mediaId").format[Long]
+    (__ \ "mediaId").formatNullable[Long]
   )(Subtitle.apply, unlift(Subtitle.unapply))
 
   implicit val languageFormat: Format[Language] = (

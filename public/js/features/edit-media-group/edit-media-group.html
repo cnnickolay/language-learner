@@ -1,0 +1,26 @@
+<div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Description</td>
+            <td>Language</td>
+            <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="mediaGroup in data.mediaGroups">
+            <td>{{mediaGroup.id}}</td>
+            <td>{{mediaGroup.name}}</td>
+            <td>{{mediaGroup.description}}</td>
+            <td>{{mediaGroup.languageId}}</td>
+            <td><a href="#/mediaGroup/{{mediaGroup.id}}" class="btn btn-sm btn-success">Edit</a></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a href="#/mediaGroup/">All medias</a>
+
+</div>

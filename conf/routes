@@ -4,6 +4,10 @@
 
 GET           /                                             controllers.ApplicationController.index
 
+GET           /mediaGroups/:id                              controllers.MediaGroupController.byId(id: Long)
+GET           /mediaGroups                                  controllers.MediaGroupController.getAll
+POST          /mediaGroups                                  controllers.MediaGroupController.create
+
 GET           /medias                                       controllers.MediaController.getAll
 GET           /medias/:id                                   controllers.MediaController.byId(id: Long)
 POST          /medias                                       controllers.MediaController.create

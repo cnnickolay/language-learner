@@ -1,18 +1,12 @@
 package controllers
 
-import java.io.File
-import java.math.MathContext
-
 import com.google.inject.Inject
-import model.Model.{SubtitlesSrtRaw, Subtitle}
+import model.Model.{Subtitle, SubtitlesSrtRaw}
 import model.SubtitleDao
-import play.api.libs.Files.TemporaryFile
-import play.api.libs.json._
-import play.api.mvc.MultipartFormData.FilePart
-import play.api.mvc.{Result, Action, Controller}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json._
+import play.api.mvc.{Action, Controller}
 import utils.SrtParser
-import utils.SrtParser.TextBlock
 
 import scala.concurrent.Future
 import scala.math.BigDecimal.RoundingMode
@@ -75,7 +69,7 @@ class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller 
             case JsSuccess(srt, _) =>
               val text = SrtParser.parseText(srt.srt)
               text.foreach(textBlock =>
-                subtitleDao.create(Subtitle(id = None, offset = Some(textBlock.timeFrom.setScale(1, RoundingMode.DOWN)), textBlock.text, mediaId))
+                subtitleDao.create(Subtitle(id = None, offset = Some(textBlock.timeFrom.setScale(1, RoundingMode.DOWN)), textBlock.text, Some(mediaId)))
               )
               Ok(text.toString())
             case JsError(_) => BadRequest("Unable to parse json")

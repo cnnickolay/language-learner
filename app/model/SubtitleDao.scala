@@ -31,7 +31,7 @@ class SubtitleDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val m
 
     def media = foreignKey("media_id", mediaId, Medias)(_.id)
 
-    def * = (id.?, offset.?, text, mediaId) <> (Subtitle.tupled, Subtitle.unapply)
+    def * = (id.?, offset.?, text, mediaId.?) <> (Subtitle.tupled, Subtitle.unapply)
   }
 
   var Subtitles = TableQuery[SubtitleTable]

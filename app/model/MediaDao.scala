@@ -9,10 +9,10 @@ import slick.driver.JdbcProfile
 import scala.concurrent.Future
 
 
-class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, val languageDao: LanguageDao) extends HasDatabaseConfigProvider[JdbcProfile] {
+class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, val mediaGroupDao: MediaGroupDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   import driver.api._
-  import languageDao.Languages
+  import mediaGroupDao.MediaGroups
 
   def all(): Future[Seq[Media]] = db.run(Medias.sortBy(_.name).result)
   def byId(id: Long): Future[Option[Media]] = db.run(Medias.filter(_.id === id).result.headOption)
@@ -24,13 +24,12 @@ class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def mediaUrl = column[String]("media_url")
-    def languageId = column[Int]("language_id")
+    def mediaGroupId = column[Long]("media_group_id")
 
-    def language = foreignKey("language_id", languageId, Languages)(_.id)
+    def mediaGroup = foreignKey("media_group_id", mediaGroupId, MediaGroups)(_.id)
 
-    def * = (id.?, name, mediaUrl, languageId) <> (Media.tupled, Media.unapply)
+    def * = (id.?, name, mediaUrl, mediaGroupId.?) <> (Media.tupled, Media.unapply)
   }
 
   val Medias = TableQuery[MediaTable]
-
 }
