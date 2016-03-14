@@ -23,12 +23,13 @@ class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
   class MediaTable(tag: Tag) extends Table[Media](tag, "media") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
+    def description = column[String]("description")
     def mediaUrl = column[String]("media_url")
     def mediaGroupId = column[Long]("media_group_id")
 
     def mediaGroup = foreignKey("media_group_id", mediaGroupId, MediaGroups)(_.id)
 
-    def * = (id.?, name, mediaUrl, mediaGroupId.?) <> (Media.tupled, Media.unapply)
+    def * = (id.?, name, description.?, mediaUrl, mediaGroupId.?) <> (Media.tupled, Media.unapply)
   }
 
   val Medias = TableQuery[MediaTable]
