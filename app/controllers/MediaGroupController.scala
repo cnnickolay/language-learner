@@ -15,8 +15,8 @@ class MediaGroupController @Inject()(mediaGroupDao: MediaGroupDao) extends Contr
     mediaGroupDao.all().map(all => Ok(Json.toJson(all)))
   }
 
-  def byId(id: Long) = Action.async {
-    mediaGroupDao.byId(id).map(all => Ok(Json.toJson(all)))
+  def byId(mediaGroupId: Long) = Action.async {
+    mediaGroupDao.byId(mediaGroupId).map(all => Ok(Json.toJson(all)))
   }
 
   def create = Action.async {

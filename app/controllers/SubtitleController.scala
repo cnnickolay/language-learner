@@ -14,19 +14,19 @@ import scala.math.BigDecimal.RoundingMode
 
 class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller {
 
-  def getAll(id: Long) = Action.async {
+  def getAll(mediaGroupId: Long, mediaId: Long) = Action.async {
     for {
-      subtitles <- subtitleDao.all(id)
+      subtitles <- subtitleDao.all(mediaId)
     } yield Ok(Json.toJson(subtitles))
   }
 
-  def byId(mediaId: Long, subtitleId: Long) = Action.async {
+  def byId(mediaGroupId: Long, mediaId: Long, subtitleId: Long) = Action.async {
     for {
       subtitle <- subtitleDao.byId(mediaId, subtitleId)
     } yield Ok(Json.toJson(subtitle))
   }
 
-  def update(mediaId: Long, subtitleId: Long) = Action.async { request =>
+  def update(mediaGroupId: Long, mediaId: Long, subtitleId: Long) = Action.async { request =>
     request.body.asJson.map(json =>
       json.validate[Subtitle] match {
         case JsSuccess(subtitle, _) =>
@@ -37,7 +37,7 @@ class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller 
     ).getOrElse(Future(BadRequest("Unable to process request")))
   }
 
-  def create(mediaId: Long) = Action.async { request =>
+  def create(mediaGroupId: Long, mediaId: Long) = Action.async { request =>
     request.body.asJson.map { json =>
       json.validate[Subtitle] match {
         case JsSuccess(subtitle, _) =>
@@ -54,27 +54,28 @@ class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller 
     }.getOrElse(Future(BadRequest("Unable to process request")))
   }
 
-  def delete(mediaId: Long, subtitleId: Long) = Action.async {
+  def delete(mediaGroupId: Long, mediaId: Long, subtitleId: Long) = Action.async {
     for {
       _ <- subtitleDao.delete(mediaId, subtitleId)
     } yield Ok(s"Subtitle $subtitleId of media $mediaId deleted")
   }
 
-  def uploadSrt(mediaId: Long) = Action.async(parse.maxLength(512 * 1024, parser = parse.json(512 * 1024))) { request =>
-    Future {
-      request.body match {
-        case Left(_) => BadRequest("File is too big")
-        case Right(json) =>
-          json.validate[SubtitlesSrtRaw] match {
-            case JsSuccess(srt, _) =>
-              val text = SrtParser.parseText(srt.srt)
-              text.foreach(textBlock =>
-                subtitleDao.create(Subtitle(id = None, offset = Some(textBlock.timeFrom.setScale(1, RoundingMode.DOWN)), textBlock.text, Some(mediaId)))
-              )
-              Ok(text.toString())
-            case JsError(_) => BadRequest("Unable to parse json")
-          }
+  def uploadSrt(mediaGroupId: Long, mediaId: Long) =
+    Action.async(parse.maxLength(512 * 1024, parser = parse.json(512 * 1024))) { request =>
+      Future {
+        request.body match {
+          case Left(_) => BadRequest("File is too big")
+          case Right(json) =>
+            json.validate[SubtitlesSrtRaw] match {
+              case JsSuccess(srt, _) =>
+                val text = SrtParser.parseText(srt.srt)
+                text.foreach(textBlock =>
+                  subtitleDao.create(Subtitle(id = None, offset = Some(textBlock.timeFrom.setScale(1, RoundingMode.DOWN)), textBlock.text, Some(mediaId)))
+                )
+                Ok(text.toString())
+              case JsError(_) => BadRequest("Unable to parse json")
+            }
+        }
       }
     }
-  }
 }

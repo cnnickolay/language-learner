@@ -11,19 +11,19 @@ import scala.concurrent.Future
 
 class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) extends Controller {
 
-  def getAll = Action.async {
+  def getAll(mediaGroupId: Long) = Action.async {
     for {
       medias <- mediaDao.all()
     } yield Ok(Json.toJson(medias))
   }
 
-  def byId(id: Long) = Action.async {
+  def byId(mediaGroupId: Long, mediaId: Long) = Action.async {
     for {
-      byId <- mediaDao.byId(id)
+      byId <- mediaDao.byId(mediaId)
     } yield Ok(Json.toJson(byId))
   }
 
-  def create = Action.async { request =>
+  def create(mediaGroupId: Long) = Action.async { request =>
     request.body.asJson.map { (json: JsValue) =>
       json.validate[Media] match {
         case JsSuccess(media: Media, _) => mediaDao.insert(media); Future{Ok("inserted media item")}
@@ -32,21 +32,21 @@ class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) ex
     }.getOrElse(Future{BadRequest("Unable to parse payload")})
   }
 
-  def delete(id: Long) = Action.async {
+  def delete(mediaGroupId: Long, mediaId: Long) = Action.async {
     Future{
     }.flatMap { _ =>
-      subtitleDao.deleteAll(id)
+      subtitleDao.deleteAll(mediaId)
     }.flatMap{ _ =>
-      mediaDao.delete(id)
+      mediaDao.delete(mediaId)
     }.flatMap{ _ =>
-      Future(Ok(s"Media with id $id deleted"))
+      Future(Ok(s"Media with id $mediaId deleted"))
     }
   }
 
-  def update(id: Long) = Action.async { request =>
+  def update(mediaGroupId: Long, mediaId: Long) = Action.async { request =>
     request.body.asJson.map( json =>
       json.validate[Media] match {
-        case JsSuccess(media, _) => mediaDao.update(id, media); Future{Ok(s"media item $id was successfully updated")}
+        case JsSuccess(media, _) => mediaDao.update(mediaId, media); Future{Ok(s"media item $mediaId was successfully updated")}
         case JsError(e) => Future{ BadRequest(s"Bad payload: $e")}
       }
     ).getOrElse(Future{BadRequest("Unable to parse payload")})
