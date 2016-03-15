@@ -17,7 +17,7 @@ class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) ex
     } yield Ok(Json.toJson(medias))
   }
 
-  def byId(mediaGroupId: Long, mediaId: Long) = Action.async {
+  def byId(mediaId: Long) = Action.async {
     for {
       byId <- mediaDao.byId(mediaId)
     } yield Ok(Json.toJson(byId))
@@ -32,7 +32,7 @@ class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) ex
     }.getOrElse(Future{BadRequest("Unable to parse payload")})
   }
 
-  def delete(mediaGroupId: Long, mediaId: Long) = Action.async {
+  def delete(mediaId: Long) = Action.async {
     Future{
     }.flatMap { _ =>
       subtitleDao.deleteAll(mediaId)
@@ -43,7 +43,7 @@ class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) ex
     }
   }
 
-  def update(mediaGroupId: Long, mediaId: Long) = Action.async { request =>
+  def update(mediaId: Long) = Action.async { request =>
     request.body.asJson.map( json =>
       json.validate[Media] match {
         case JsSuccess(media, _) => mediaDao.update(mediaId, media); Future{Ok(s"media item $mediaId was successfully updated")}

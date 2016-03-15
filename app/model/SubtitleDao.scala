@@ -11,12 +11,12 @@ class SubtitleDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val m
   import mediaDao.Medias
 
   def all(mediaId: Long) = db.run(Subtitles.filter(_.mediaId === mediaId).sortBy(_.offset.asc.nullsLast).result)
-  def byId(mediaId: Long, subtitleId: Long) = db.run(Subtitles.filter(sub => sub.mediaId === mediaId && sub.id === subtitleId).result.headOption)
+  def byId(subtitleId: Long) = db.run(Subtitles.filter(sub => sub.id === subtitleId).result.headOption)
 
-  def update(mediaId: Long, subtitleId: Long, subtitle: Subtitle) = db.run {
-    Subtitles.filter(sub => sub.mediaId === mediaId && sub.id === subtitleId).update(subtitle)
+  def update(subtitleId: Long, subtitle: Subtitle) = db.run {
+    Subtitles.filter(sub => sub.id === subtitleId).update(subtitle)
   }
-  def delete(mediaId: Long, subtitleId: Long) = db.run(Subtitles.filter(sub => sub.mediaId === mediaId && sub.id === subtitleId).delete)
+  def delete(subtitleId: Long) = db.run(Subtitles.filter(sub => sub.id === subtitleId).delete)
 
   def deleteAll(mediaId: Long) = db.run(Subtitles.filter(sub => sub.mediaId === mediaId).delete)
 

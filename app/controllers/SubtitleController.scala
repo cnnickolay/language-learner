@@ -14,30 +14,30 @@ import scala.math.BigDecimal.RoundingMode
 
 class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller {
 
-  def getAll(mediaGroupId: Long, mediaId: Long) = Action.async {
+  def getAll(mediaId: Long) = Action.async {
     for {
       subtitles <- subtitleDao.all(mediaId)
     } yield Ok(Json.toJson(subtitles))
   }
 
-  def byId(mediaGroupId: Long, mediaId: Long, subtitleId: Long) = Action.async {
+  def byId(subtitleId: Long) = Action.async {
     for {
-      subtitle <- subtitleDao.byId(mediaId, subtitleId)
+      subtitle <- subtitleDao.byId(subtitleId)
     } yield Ok(Json.toJson(subtitle))
   }
 
-  def update(mediaGroupId: Long, mediaId: Long, subtitleId: Long) = Action.async { request =>
+  def update(subtitleId: Long) = Action.async { request =>
     request.body.asJson.map(json =>
       json.validate[Subtitle] match {
         case JsSuccess(subtitle, _) =>
-          subtitleDao.update(mediaId, subtitleId, subtitle)
-            .flatMap(_ => Future(Ok(s"Subtitle $subtitleId of media $mediaId updated")))
+          subtitleDao.update(subtitleId, subtitle)
+            .flatMap(_ => Future(Ok(s"Subtitle $subtitleId updated")))
         case JsError(e) => Future(BadRequest("Unable to parse json"))
       }
     ).getOrElse(Future(BadRequest("Unable to process request")))
   }
 
-  def create(mediaGroupId: Long, mediaId: Long) = Action.async { request =>
+  def create(mediaId: Long) = Action.async { request =>
     request.body.asJson.map { json =>
       json.validate[Subtitle] match {
         case JsSuccess(subtitle, _) =>
@@ -54,13 +54,13 @@ class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller 
     }.getOrElse(Future(BadRequest("Unable to process request")))
   }
 
-  def delete(mediaGroupId: Long, mediaId: Long, subtitleId: Long) = Action.async {
+  def delete(subtitleId: Long) = Action.async {
     for {
-      _ <- subtitleDao.delete(mediaId, subtitleId)
-    } yield Ok(s"Subtitle $subtitleId of media $mediaId deleted")
+      _ <- subtitleDao.delete(subtitleId)
+    } yield Ok(s"Subtitle $subtitleId deleted")
   }
 
-  def uploadSrt(mediaGroupId: Long, mediaId: Long) =
+  def uploadSrt(mediaId: Long) =
     Action.async(parse.maxLength(512 * 1024, parser = parse.json(512 * 1024))) { request =>
       Future {
         request.body match {

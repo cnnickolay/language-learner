@@ -23,4 +23,8 @@ class MediaGroupController @Inject()(mediaGroupDao: MediaGroupDao) extends Contr
     Future(Ok(""))
   }
 
+  def delete(mediaGroupId: Long) = Action.async {
+    Future(Ok(""))
+  }
+
 }

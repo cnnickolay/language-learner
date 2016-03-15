@@ -2,29 +2,33 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET           /                                                                       controllers.ApplicationController.index
+GET           /                                        controllers.ApplicationController.index
 
-GET           /mediaGroups/:mediaGroupId                                              controllers.MediaGroupController.byId(mediaGroupId: Long)
-GET           /mediaGroups                                                            controllers.MediaGroupController.getAll
-POST          /mediaGroups                                                            controllers.MediaGroupController.create
+# Media groups
+GET           /mediaGroups/:mediaGroupId               controllers.MediaGroupController.byId(mediaGroupId: Long)
+DELETE        /mediaGroups/:mediaGroupId               controllers.MediaGroupController.delete(mediaGroupId: Long)
+GET           /mediaGroups                             controllers.MediaGroupController.getAll
+POST          /mediaGroups                             controllers.MediaGroupController.create
 
-GET           /mediaGroups/:mediaGroupId/medias                                       controllers.MediaController.getAll(mediaGroupId: Long)
-GET           /mediaGroups/:mediaGroupId/medias/:mediaId                              controllers.MediaController.byId(mediaGroupId: Long, mediaId: Long)
-POST          /mediaGroups/:mediaGroupId/medias                                       controllers.MediaController.create(mediaGroupId: Long)
-DELETE        /mediaGroups/:mediaGroupId/medias/:mediaId                              controllers.MediaController.delete(mediaGroupId: Long, mediaId: Long)
-PUT           /mediaGroups/:mediaGroupId/medias/:mediaId                              controllers.MediaController.update(mediaGroupId: Long, mediaId: Long)
+# Medias
+GET           /mediaGroups/:mediaGroupId/medias        controllers.MediaController.getAll(mediaGroupId: Long)
+POST          /mediaGroups/:mediaGroupId/medias        controllers.MediaController.create(mediaGroupId: Long)
+GET           /medias/:mediaId                         controllers.MediaController.byId(mediaId: Long)
+DELETE        /medias/:mediaId                         controllers.MediaController.delete(mediaId: Long)
+PUT           /medias/:mediaId                         controllers.MediaController.update(mediaId: Long)
 
-GET           /mediaGroups/:mediaGroupId/medias/:mediaId/subtitles                    controllers.SubtitleController.getAll(mediaGroupId: Long, mediaId: Long)
-GET           /mediaGroups/:mediaGroupId/medias/:mediaId/subtitles/:subtitleId        controllers.SubtitleController.byId(mediaGroupId: Long, mediaId: Long, subtitleId: Long)
-PUT           /mediaGroups/:mediaGroupId/medias/:mediaId/subtitles/:subtitleId        controllers.SubtitleController.update(mediaGroupId: Long, mediaId: Long, subtitleId: Long)
-DELETE        /mediaGroups/:mediaGroupId/medias/:mediaId/subtitles/:subtitleId        controllers.SubtitleController.delete(mediaGroupId: Long, mediaId: Long, subtitleId: Long)
-POST          /mediaGroups/:mediaGroupId/medias/:mediaId/subtitles/srt                controllers.SubtitleController.uploadSrt(mediaGroupId: Long, mediaId: Long)
-POST          /mediaGroups/:mediaGroupId/medias/:mediaId/subtitles                    controllers.SubtitleController.create(mediaGroupId: Long, mediaId: Long)
+# Subtitles
+GET           /medias/:mediaId/subtitles               controllers.SubtitleController.getAll(mediaId: Long)
+POST          /medias/:mediaId/subtitles/srt           controllers.SubtitleController.uploadSrt(mediaId: Long)
+POST          /medias/:mediaId/subtitles               controllers.SubtitleController.create(mediaId: Long)
+GET           /subtitles/:subtitleId                   controllers.SubtitleController.byId(subtitleId: Long)
+PUT           /subtitles/:subtitleId                   controllers.SubtitleController.update(subtitleId: Long)
+DELETE        /subtitles/:subtitleId                   controllers.SubtitleController.delete(subtitleId: Long)
 
-GET           /languages/:id                                                          controllers.LanguageController.byId(id: Int)
-GET           /languages                                                              controllers.LanguageController.getAll
+GET           /languages/:id                           controllers.LanguageController.byId(id: Int)
+GET           /languages                               controllers.LanguageController.getAll
 
-GET           /translations                                                           controllers.TranslationController.translate(from: String, to: String, word: String)
+GET           /translations                            controllers.TranslationController.translate(from: String, to: String, word: String)
 
 # Map static resources from the /public folder to the /assets URL path
-GET           /assets/*file                                                           controllers.Assets.versioned(path="/public", file: Asset)
+GET           /assets/*file                            controllers.Assets.versioned(path="/public", file: Asset)
