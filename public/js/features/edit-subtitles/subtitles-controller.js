@@ -1,6 +1,6 @@
 'use strict';
 
-app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, SubtitleService, SubtitleSrtUploadService,
+app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, SubtitleService,
                                          LanguageService, TranslationService, YesNoModalService, AddSubtitlesService,
                                          TranslationModalService, $routeParams, $location, KEY_CODES) {
 
@@ -45,17 +45,17 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
   };
 
   var refresh = function () {
-    MediaService.get({id: data.mediaId}, function (media) {
+    MediaService.get({mediaId: data.mediaId}, function (media) {
       setModel(media);
 
-      LanguageService.get({id: media.languageId}, function (language) {
+      LanguageService.query({id: media.languageId}, function (language) {
         data.language = language;
       });
     });
   };
 
   var refreshSubtitles = function () {
-    SubtitleService.query({mediaId: data.mediaId}, function (subtitles) {
+    SubtitleService.all({mediaId: data.mediaId}, function (subtitles) {
       setSubtitles(subtitles);
       if (!data.currentSubtitle) {
         if ($location.search().sub) {
@@ -115,7 +115,7 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
   };
 
   $scope.update = function () {
-    MediaService.update({id: data.mediaId}, data.media, function () {
+    MediaService.update({mediaId: data.mediaId}, data.media, function () {
       refresh();
     });
   };
@@ -135,10 +135,10 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
   };
 
   $scope.add = function () {
-    var uploadSubtitles = new SubtitleSrtUploadService();
+    var uploadSubtitles = new SubtitleService();
     uploadSubtitles.mediaId = data.mediaId;
     uploadSubtitles.srt = data.fileSelected;
-    uploadSubtitles.$save({mediaId: data.mediaId}, function () {
+    uploadSubtitles.$uploadSubtitle({mediaId: data.mediaId}, function () {
       refreshSubtitles();
     });
   };

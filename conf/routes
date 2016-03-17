@@ -11,8 +11,9 @@ GET           /mediaGroups                             controllers.MediaGroupCon
 POST          /mediaGroups                             controllers.MediaGroupController.create
 
 # Medias
-GET           /mediaGroups/:mediaGroupId/medias        controllers.MediaController.getAll(mediaGroupId: Long)
-POST          /mediaGroups/:mediaGroupId/medias        controllers.MediaController.create(mediaGroupId: Long)
+GET           /medias                                  controllers.MediaController.getAll
+GET           /mediaGroups/:mediaGroupId/medias        controllers.MediaController.getAllByMediaGroup(mediaGroupId: Long)
+POST          /medias                                  controllers.MediaController.create
 GET           /medias/:mediaId                         controllers.MediaController.byId(mediaId: Long)
 DELETE        /medias/:mediaId                         controllers.MediaController.delete(mediaId: Long)
 PUT           /medias/:mediaId                         controllers.MediaController.update(mediaId: Long)

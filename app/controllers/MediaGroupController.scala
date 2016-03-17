@@ -1,9 +1,10 @@
 package controllers
 
+import akka.actor.Status.{Failure, Success}
 import com.google.inject.Inject
 import model.MediaGroupDao
 import model.Model._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,12 +20,21 @@ class MediaGroupController @Inject()(mediaGroupDao: MediaGroupDao) extends Contr
     mediaGroupDao.byId(mediaGroupId).map(all => Ok(Json.toJson(all)))
   }
 
-  def create = Action.async {
-    Future(Ok(""))
+  def create = Action.async { request =>
+    Future {
+      request.body.asJson.map { json =>
+        json.validate[MediaGroup] match {
+          case JsSuccess(value, _) => mediaGroupDao.insert(value); Ok("New media group added successfully")
+          case JsError(e) => BadRequest("Failed to parse json")
+        }
+      }.getOrElse(BadRequest("Failed to process request"))
+    }
   }
 
   def delete(mediaGroupId: Long) = Action.async {
-    Future(Ok(""))
+    for {
+      _ <- mediaGroupDao.delete(mediaGroupId)
+    } yield Ok(s"Media group $mediaGroupId has been deleted")
   }
 
 }

@@ -11,9 +11,15 @@ import scala.concurrent.Future
 
 class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) extends Controller {
 
-  def getAll(mediaGroupId: Long) = Action.async {
+  def getAll = Action.async {
     for {
       medias <- mediaDao.all()
+    } yield Ok(Json.toJson(medias))
+  }
+
+  def getAllByMediaGroup(mediaGroupId: Long) = Action.async {
+    for {
+      medias <- mediaDao.byMediaGroup(mediaGroupId)
     } yield Ok(Json.toJson(medias))
   }
 
@@ -23,7 +29,7 @@ class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) ex
     } yield Ok(Json.toJson(byId))
   }
 
-  def create(mediaGroupId: Long) = Action.async { request =>
+  def create = Action.async { request =>
     request.body.asJson.map { (json: JsValue) =>
       json.validate[Media] match {
         case JsSuccess(media: Media, _) => mediaDao.insert(media); Future{Ok("inserted media item")}

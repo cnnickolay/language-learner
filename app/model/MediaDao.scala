@@ -15,6 +15,7 @@ class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
   import mediaGroupDao.MediaGroups
 
   def all(): Future[Seq[Media]] = db.run(Medias.sortBy(_.name).result)
+  def byMediaGroup(mediaGroupId: Long) = db.run(Medias.filter(_.mediaGroupId === mediaGroupId).sortBy(_.name).result)
   def byId(id: Long): Future[Option[Media]] = db.run(Medias.filter(_.id === id).result.headOption)
   def insert(media: Media) = db.run(Medias += media)
   def delete(id: Long) = db.run(Medias.filter(_.id === id).delete)

@@ -11,7 +11,7 @@ object Model {
   case class Subtitle(id: Option[Long], offset: Option[BigDecimal], text: String, mediaId: Option[Long])
   case class Language(id: Option[Int], name: String)
 
-  case class SubtitlesSrtRaw(mediaId: Long, srt: String)
+  case class SubtitlesSrtRaw(mediaId: Option[Long], srt: String)
 
   implicit val mediaGroupFormat: Format[MediaGroup] = (
     (__ \ "id").formatNullable[Long] and
@@ -41,7 +41,7 @@ object Model {
   )(Language.apply, unlift(Language.unapply))
 
   implicit val subtitleSrtRawReads: Reads[SubtitlesSrtRaw] = (
-    (__ \ "mediaId").read[Long] and
+    (__ \ "mediaId").readNullable[Long] and
     (__ \ "srt").read[String]
   )(SubtitlesSrtRaw.apply _)
 

@@ -7,17 +7,17 @@ app.factory('SubtitleService', function ($resource) {
       all: {
         method: 'GET',
         isArray: true,
-        url: '/media/:mediaId/subtitles',
+        url: '/medias/:mediaId/subtitles',
         params: { mediaId: '@mediaId'}
       },
       create: {
         method: 'POST',
-        url: '/media/:mediaId/subtitles',
+        url: '/medias/:mediaId/subtitles',
         params: { mediaId: '@mediaId'}
       },
       uploadSubtitle: {
         method: 'POST',
-        url: '/media/:mediaId/subtitles/srt',
+        url: '/medias/:mediaId/subtitles/srt',
         params: { mediaId: '@mediaId'}
       }
     }

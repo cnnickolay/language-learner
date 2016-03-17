@@ -1,9 +1,7 @@
 'use strict';
 
 app.factory('MediaGroupService', function ($resource) {
-  return {
-    api: $resource('/mediaGroups/:id', {id: '@id'}, {
-      'update': {method: 'PUT'}
-    })
-  }
+  return $resource('/mediaGroups/:mediaGroupId', {id: '@mediaGroupId'}, {
+    'update': {method: 'PUT'}
+  })
 });

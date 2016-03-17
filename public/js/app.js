@@ -11,7 +11,7 @@ var app = angular.module('lang', ['ngResource', 'ngRoute', 'ui.bootstrap'])
         templateUrl: '/assets/js/features/edit-media/media.html',
         controller: 'MediaCtrl'
       })
-      .when('/mediaGroup/:mediaGroupId/media/:mediaId', {
+      .when('/media/:mediaId', {
         templateUrl: '/assets/js/features/edit-subtitles/subtitles.html',
         controller: 'SubtitleCtrl',
         reloadOnSearch: false

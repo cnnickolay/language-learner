@@ -15,8 +15,23 @@
             <td>{{mediaGroup.id}}</td>
             <td>{{mediaGroup.name}}</td>
             <td>{{mediaGroup.description}}</td>
-            <td>{{mediaGroup.languageId}}</td>
-            <td><a href="#/mediaGroup/{{mediaGroup.id}}" class="btn btn-sm btn-success">Edit</a></td>
+            <td ng-init="augmentLanguage(mediaGroup)">{{mediaGroup.language.name}}</td>
+            <td>
+                <a href="#/mediaGroup/{{mediaGroup.id}}" class="btn btn-sm btn-success">Edit</a>
+                <button ng-click="delete(mediaGroup)" class="btn btn-sm btn-danger">Delete</button>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><div class="form-group-sm"><input class="form-control" ng-model="data.newMediaGroup.name"/></div></td>
+            <td><div class="form-group-sm">
+                <textarea class="form-control" ng-model="data.newMediaGroup.description" rows="2"></textarea>
+            </div></td>
+            <td><div class="form-group-sm">
+                <select ng-options="l.name for l in data.languages track by l.id"
+                        ng-model="data.selectedLanguage"
+                        ng-change="data.newMediaGroup.languageId = data.selectedLanguage.id"></select></div></td>
+            <td><button ng-click="create()" class="btn btn-sm btn-warning">Create</button></td>
         </tr>
         </tbody>
     </table>

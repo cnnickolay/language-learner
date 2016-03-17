@@ -6,14 +6,14 @@ app.factory('MediaService', function ($resource) {
       update: {method: 'PUT'},
       all: {
         method: 'GET',
-        url: 'mediaGroup/:mediaGroupId/medias',
-        params: {mediaGroupId: '@mediaGroupId'},
+        url: '/medias',
         isArray: true
       },
-      create: {
-        method: 'POST',
-        url: 'mediaGroup/:mediaGroupId/medias',
-        params: {mediaGroupId: '@mediaGroupId'}
+      allByMediaGroupId: {
+        method: 'GET',
+        url: 'mediaGroups/:mediaGroupId/medias',
+        params: {mediaGroupId: '@mediaGroupId'},
+        isArray: true
       }
     });
 });

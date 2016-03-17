@@ -3,6 +3,7 @@
         <thead>
         <tr>
             <th>Id</th>
+            <th>Media group</th>
             <th>Name</th>
             <th>Media url</th>
             <th></th>
@@ -12,12 +13,14 @@
         <tbody>
         <tr ng-repeat="media in data.medias" ng-init="augmentMedia(media)">
             <td>{{media.id}}</td>
+            <td ng-init="augmentMedia(media)">{{media.mediaGroup.name}}</td>
             <td>{{media.name}}</td>
             <td><a href="{{media.mediaUrl}}">{{media.mediaUrl}}</a></td>
-            <td><a href="#/media/{{media.id}}" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span></a></td>
+            <td><a ng-href="#/media/{{media.id}}" class="btn btn-sm btn-warning"><span class="glyphicon glyphicon-edit"></span></a></td>
             <td><button class="btn btn-sm btn-danger" ng-click="delete(media.id)"><span class="glyphicon glyphicon-trash"></span></button></td>
         </tr>
         <tr>
+            <td></td>
             <td></td>
             <td><div class="form-group-sm"><input class="form-control" ng-model="data.newMedia.name"/></div></td>
             <td><div class="form-group-sm"><input class="form-control" ng-model="data.newMedia.mediaUrl"/></div></td>
