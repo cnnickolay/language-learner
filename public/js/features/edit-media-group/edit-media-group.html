@@ -17,8 +17,10 @@
             <td>{{mediaGroup.description}}</td>
             <td ng-init="augmentLanguage(mediaGroup)">{{mediaGroup.language.name}}</td>
             <td>
-                <a href="#/mediaGroup/{{mediaGroup.id}}" class="btn btn-sm btn-success">Edit</a>
-                <button ng-click="delete(mediaGroup)" class="btn btn-sm btn-danger">Delete</button>
+                <div class="btn-group">
+                    <a href="#/mediaGroup/{{mediaGroup.id}}" class="btn btn-sm btn-success">Edit</a>
+                    <button ng-click="delete(mediaGroup)" class="btn btn-sm btn-danger">Delete</button>
+                </div>
             </td>
         </tr>
         <tr>

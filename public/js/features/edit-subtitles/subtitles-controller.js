@@ -60,7 +60,7 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
       if (!data.currentSubtitle) {
         if ($location.search().sub) {
           setCurrentSubtitle(findSubtitleById(subtitles, $location.search().sub));
-        } else {
+        } else if (subtitles.length > 0) {
           setCurrentSubtitle(subtitles[0]);
         }
       } else {
@@ -171,7 +171,7 @@ app.controller('SubtitleCtrl', function ($scope, $log, $uibModal, MediaService, 
     if (!data.newSubtitle.offset) {
       data.newSubtitle.offset = data.timeCallback;
     }
-    data.newSubtitle.$save({mediaId: data.mediaId}, function () {
+    data.newSubtitle.$create({mediaId: data.mediaId}, function () {
       refreshSubtitles();
       initializeNewSubtitle();
     });
