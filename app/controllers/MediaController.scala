@@ -1,6 +1,7 @@
 package controllers
 
 import com.google.inject.Inject
+import controllers.AuthAction
 import model.{SubtitleDao, MediaDao}
 import model.Model._
 import play.api.libs.json._
@@ -11,7 +12,11 @@ import scala.concurrent.Future
 
 class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) extends Controller {
 
-  def getAll = Action.async {
+  def submit = AuthAction(parse.text) { request =>
+    Ok("Got a body " + " bytes long")
+  }
+
+  def getAll = AuthAction("role") {
     for {
       medias <- mediaDao.all()
     } yield Ok(Json.toJson(medias))
@@ -29,7 +34,7 @@ class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) ex
     } yield Ok(Json.toJson(byId))
   }
 
-  def create = Action.async { request =>
+  def create = Action.async { (request: Request[AnyContent]) =>
     request.body.asJson.map { (json: JsValue) =>
       json.validate[Media] match {
         case JsSuccess(media: Media, _) => mediaDao.insert(media); Future{Ok("inserted media item")}
