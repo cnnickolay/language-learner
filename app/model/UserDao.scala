@@ -1,9 +1,10 @@
 package model
 
 import com.google.inject.Inject
-import model.Model.User
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
+
+case class User(id: Option[Long], name: Option[String], lastname: Option[String], login: String, passwordHash: String)
 
 class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
 

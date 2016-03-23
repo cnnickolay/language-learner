@@ -2,12 +2,12 @@ package model
 
 import javax.inject.Inject
 
-import model.Model.Media
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 
 import scala.concurrent.Future
 
+case class Media(id: Option[Long], name: String, description: Option[String], mediaUrl: String, mediaGroupId: Option[Long])
 
 class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, val mediaGroupDao: MediaGroupDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 

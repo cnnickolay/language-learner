@@ -1,9 +1,8 @@
 package controllers
 
-import akka.actor.Status.{Failure, Success}
 import com.google.inject.Inject
-import model.MediaGroupDao
-import model.Model._
+import model.{MediaGroup, MediaGroupDao}
+import model.JsonConverters._
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{Action, Controller}
 

@@ -2,9 +2,10 @@ package controllers
 
 import com.google.inject.Inject
 import model.LanguageDao
-import model.Model._
+import model.JsonConverters._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class LanguageController @Inject()(languageDao: LanguageDao) extends Controller {

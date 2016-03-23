@@ -1,9 +1,10 @@
 package model
 
 import com.google.inject.Inject
-import model.Model.MediaGroup
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
+
+case class MediaGroup(id: Option[Long], name: String, description: Option[String], languageId: Int)
 
 class MediaGroupDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, val languageDao: LanguageDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 

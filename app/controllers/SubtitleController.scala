@@ -1,8 +1,7 @@
 package controllers
 
 import com.google.inject.Inject
-import model.Model.{Subtitle, SubtitlesSrtRaw}
-import model.SubtitleDao
+import model.{SubtitlesSrtRaw, JsonConverters, Subtitle, SubtitleDao}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
@@ -11,8 +10,9 @@ import utils.SrtParser
 import scala.concurrent.Future
 import scala.math.BigDecimal.RoundingMode
 
-
 class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller {
+
+  import JsonConverters._
 
   def getAll(mediaId: Long) = Action.async {
     for {

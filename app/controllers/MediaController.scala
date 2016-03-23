@@ -2,8 +2,8 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.AuthAction
-import model.{SubtitleDao, MediaDao}
-import model.Model._
+import model.{Media, SubtitleDao, MediaDao}
+import model.JsonConverters._
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext

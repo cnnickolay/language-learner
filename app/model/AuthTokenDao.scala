@@ -3,11 +3,12 @@ package model
 import java.sql.Timestamp
 import javax.inject.Inject
 
-import model.Model.{User, AuthToken}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 
 import scala.concurrent.Future
+
+case class AuthToken(token: String, createdAt: Timestamp, expiresAt: Timestamp, active: Boolean = true, userId: Long)
 
 class AuthTokenDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val userDao: UserDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 

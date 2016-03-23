@@ -1,9 +1,11 @@
 package model
 
 import com.google.inject.Inject
-import model.Model.Subtitle
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
+
+case class SubtitlesSrtRaw(mediaId: Option[Long], srt: String)
+case class Subtitle(id: Option[Long], offset: Option[BigDecimal], text: String, mediaId: Option[Long])
 
 class SubtitleDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val mediaDao: MediaDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 
