@@ -1,22 +1,18 @@
 package controllers
 
 import com.google.inject.Inject
-import controllers.AuthAction
-import model.{Media, SubtitleDao, MediaDao}
 import model.JsonConverters._
+import model.{Media, MediaDao, SubtitleDao}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import utils.actions.CORSAction
 
 import scala.concurrent.Future
 
 class MediaController @Inject()(mediaDao: MediaDao, subtitleDao: SubtitleDao) extends Controller {
 
-  def submit = AuthAction(parse.text) { request =>
-    Ok("Got a body " + " bytes long")
-  }
-
-  def getAll = AuthAction("role") {
+  def getAll = CORSAction.async {
     for {
       medias <- mediaDao.all()
     } yield Ok(Json.toJson(medias))

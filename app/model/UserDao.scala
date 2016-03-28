@@ -4,7 +4,12 @@ import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 
-case class User(id: Option[Long], name: Option[String], lastname: Option[String], login: String, passwordHash: String)
+case class User(id: Option[Long] = None,
+                name: Option[String] = None,
+                lastname: Option[String] = None,
+                login: String,
+                passwordHash: String,
+                sessionDuration: Int)
 
 class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
 
@@ -18,11 +23,12 @@ class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider) extends H
   class UserTable(tag: Tag) extends Table[User](tag, "user") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
-    def lastname = column[String]("name")
+    def lastname = column[String]("lastname")
     def login = column[String]("login")
     def passwordHash = column[String]("password_hash")
+    def sessionDuration = column[Int]("session_duration")
 
-    def * = (id.?, name.?, lastname.?, login, passwordHash) <> (User.tupled, User.unapply)
+    def * = (id.?, name.?, lastname.?, login, passwordHash, sessionDuration) <> (User.tupled, User.unapply)
   }
 
   val Users = TableQuery[UserTable]

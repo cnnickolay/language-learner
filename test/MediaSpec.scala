@@ -1,11 +1,8 @@
-import org.scalatest.Ignore
+import org.junit.runner._
 import org.specs2.mutable._
 import org.specs2.runner._
-import org.junit.runner._
-
-import play.api.test._
 import play.api.test.Helpers._
-import play.libs.Json
+import play.api.test._
 
 @RunWith(classOf[JUnitRunner])
 class MediaSpec extends Specification {
@@ -64,6 +61,7 @@ class MediaSpec extends Specification {
 
   }
 
+/*
   "Media 2" in new WithApplication(app) {
     "get all medias2" in new WithApplication(app) {
       val result = route(FakeRequest(GET, "/medias")).get
@@ -75,4 +73,5 @@ class MediaSpec extends Specification {
     }
 
   }
+*/
 }

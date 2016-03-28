@@ -5,13 +5,16 @@ import model.{MediaGroup, MediaGroupDao}
 import model.JsonConverters._
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{Action, Controller}
+import utils.actions.{AuthTokenRefreshAction, UserAction, ActionsConfiguration, CORSAction}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MediaGroupController @Inject()(mediaGroupDao: MediaGroupDao) extends Controller {
+class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
+                                     val userAction: UserAction,
+                                     val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
 
-  def getAll = Action.async {
+  def getAll = userActionWithCORS.async {
     mediaGroupDao.all().map(all => Ok(Json.toJson(all)))
   }
 
