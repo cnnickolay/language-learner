@@ -25,7 +25,7 @@ class AuthTokenDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val 
     users.result.headOption
   }
   def create(authToken: AuthToken) = db.run(AuthTokens += authToken)
-  def expireToken(token: String) = db.run {
+  def revokeToken(token: String) = db.run {
     AuthTokens.filter(_.token === token)
       .map(token => (token.active, token.expiredAt))
       .update(false, new Timestamp(System.currentTimeMillis()))
@@ -35,6 +35,13 @@ class AuthTokenDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val 
   }
   def refreshToken(token: String, now: Timestamp) = db.run {
     AuthTokens.filter(_.token === token).map(_.expiresAt).update(now)
+  }
+  def findActiveTokenByUser(login: String, passwordHash: String): Future[Option[AuthToken]] = db.run {
+    val results = for {
+      user <- Users if user.login === login && user.passwordHash === passwordHash
+      authToken <- AuthTokens if authToken.userId === user.id && authToken.active
+    } yield authToken
+    results.result.headOption
   }
 
   class AuthTokenTable(tag: Tag) extends Table[AuthToken](tag, "auth_token") {

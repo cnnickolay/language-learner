@@ -6,27 +6,30 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 import utils.SrtParser
+import utils.actions.{UserAction, AuthTokenRefreshAction, ActionsConfiguration}
 
 import scala.concurrent.Future
 import scala.math.BigDecimal.RoundingMode
 
-class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller {
+class SubtitleController @Inject()(val subtitleDao: SubtitleDao,
+                                   val userAction: UserAction,
+                                   val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
 
   import JsonConverters._
 
-  def getAll(mediaId: Long) = Action.async {
+  def getAll(mediaId: Long) = authActionWithCORS.async {
     for {
       subtitles <- subtitleDao.all(mediaId)
     } yield Ok(Json.toJson(subtitles))
   }
 
-  def byId(subtitleId: Long) = Action.async {
+  def byId(subtitleId: Long) = authActionWithCORS.async {
     for {
       subtitle <- subtitleDao.byId(subtitleId)
     } yield Ok(Json.toJson(subtitle))
   }
 
-  def update(subtitleId: Long) = Action.async { request =>
+  def update(subtitleId: Long) = authActionWithCORS.async { request =>
     request.body.asJson.map(json =>
       json.validate[Subtitle] match {
         case JsSuccess(subtitle, _) =>
@@ -37,7 +40,7 @@ class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller 
     ).getOrElse(Future(BadRequest("Unable to process request")))
   }
 
-  def create(mediaId: Long) = Action.async { request =>
+  def create(mediaId: Long) = authActionWithCORS.async { request =>
     request.body.asJson.map { json =>
       json.validate[Subtitle] match {
         case JsSuccess(subtitle, _) =>
@@ -54,14 +57,14 @@ class SubtitleController @Inject()(subtitleDao: SubtitleDao) extends Controller 
     }.getOrElse(Future(BadRequest("Unable to process request")))
   }
 
-  def delete(subtitleId: Long) = Action.async {
+  def delete(subtitleId: Long) = authActionWithCORS.async {
     for {
       _ <- subtitleDao.delete(subtitleId)
     } yield Ok(s"Subtitle $subtitleId deleted")
   }
 
   def uploadSrt(mediaId: Long) =
-    Action.async(parse.maxLength(512 * 1024, parser = parse.json(512 * 1024))) { request =>
+    authActionWithCORS.async(parse.maxLength(512 * 1024, parser = parse.json(512 * 1024))) { request =>
       Future {
         request.body match {
           case Left(_) => BadRequest("File is too big")

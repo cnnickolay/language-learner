@@ -33,7 +33,7 @@ class UserAction @Inject()(val userDao: UserDao, val authTokenDao: AuthTokenDao)
               noUserRequest
             } else if (foundToken.expiresAt.before(new Timestamp(System.currentTimeMillis()))) { // check if auth token is overdue
               l.debug(s"Token $tokenValue is overdue and will be cancelled")
-              Await.result(authTokenDao.expireToken(tokenValue), Inf)
+              Await.result(authTokenDao.revokeToken(tokenValue), Inf)
               noUserRequest
             } else {
               Await.result(authTokenDao.userByToken(tokenValue), Inf) match {

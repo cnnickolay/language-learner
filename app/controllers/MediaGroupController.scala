@@ -14,15 +14,15 @@ class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
                                      val userAction: UserAction,
                                      val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
 
-  def getAll = userActionWithCORS.async {
+  def getAll = authActionWithCORS.async {
     mediaGroupDao.all().map(all => Ok(Json.toJson(all)))
   }
 
-  def byId(mediaGroupId: Long) = Action.async {
+  def byId(mediaGroupId: Long) = authActionWithCORS.async {
     mediaGroupDao.byId(mediaGroupId).map(all => Ok(Json.toJson(all)))
   }
 
-  def create = Action.async { request =>
+  def create = authActionWithCORS.async { request =>
     Future {
       request.body.asJson.map { json =>
         json.validate[MediaGroup] match {
@@ -33,7 +33,7 @@ class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
     }
   }
 
-  def delete(mediaGroupId: Long) = Action.async {
+  def delete(mediaGroupId: Long) = authActionWithCORS.async {
     for {
       _ <- mediaGroupDao.delete(mediaGroupId)
     } yield Ok(s"Media group $mediaGroupId has been deleted")

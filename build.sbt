@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "3.0.0-M15",
   "mysql" % "mysql-connector-java" % "5.1.38",
   "net.sourceforge.htmlunit" % "htmlunit" % "2.20",
-  "org.seleniumhq.selenium" % "selenium-java" % "2.49.0"
+  "org.seleniumhq.selenium" % "selenium-java" % "2.49.0",
+  "com.google.guava" % "guava" % "19.0"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
