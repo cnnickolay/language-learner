@@ -36,13 +36,13 @@ class AuthenticationController @Inject()(val userDao: UserDao,
       case Some(user) =>
         val passwordHash = HashUtils.calculateSha256(user.password)
         authTokenDao.findActiveTokenByUser(user.login, passwordHash) flatMap {
-          case foundToken@Some(token) => l.debug(s"Existing token found ${token.token}"); Future(foundToken)
+          case foundToken @ Some(token) => l.debug(s"Existing token found ${token.token}"); Future(foundToken)
           case None => l.debug("Token not found, creating a new one"); userDao.byLoginAndPassword(user.login, passwordHash)
         } map {
           case None =>
             val err = s"User with login ${user.login} and password hash $passwordHash not found"
             l.debug(err)
-            BadRequest(err)
+            Unauthorized(err)
           case Some(user: User) =>
             l.debug(s"User ${user.login} found. Creating new security token")
             val now = new DateTime()

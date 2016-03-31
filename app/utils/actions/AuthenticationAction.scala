@@ -10,7 +10,7 @@ object AuthenticationAction extends ActionFilter[UserRequest] {
   def filter[A](request: UserRequest[A]): Future[Option[Result]] = Future {
     request user match {
       case Some(user) => None
-      case None => Some(Results.Forbidden)
+      case None => Some(Results.Unauthorized)
     }
   }
 

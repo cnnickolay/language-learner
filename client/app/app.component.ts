@@ -10,6 +10,8 @@ import {AuthenticationService} from "./authentication.service";
   selector: 'my-app',
   template: `
     <h2>12323</h2>
+    login: <input [(ngModel)]="login"/><br/>
+    password: <input type="password" [(ngModel)]="password"/><br/>
     <button class="btn btn-warning" (click)="auth()">auth</button><br/>
     <button class="btn btn-warning" (click)="logoff()">logoff</button><br/>
     <span>{{x}}</span>
@@ -48,6 +50,8 @@ import {AuthenticationService} from "./authentication.service";
 ])
 export class AppComponent {
   list = Array<Name>();
+  login: String;
+  password: String;
 
   constructor(private _myService: MyService, private _authService: AuthenticationService) {}
 
@@ -68,7 +72,9 @@ export class AppComponent {
   }
 
   auth() {
-    this._authService.authenticate('god', 'Dsch1982');
+    this._authService.authenticate(this.login, this.password);
+    this.login = '';
+    this.password = '';
   }
 
   logoff() {
