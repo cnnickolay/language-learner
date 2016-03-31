@@ -9,7 +9,12 @@ import slick.driver.JdbcProfile
 
 import scala.concurrent.Future
 
-case class AuthToken(token: String, createdAt: Timestamp, expiresAt: Timestamp, expiredAt: Option[Timestamp], active: Boolean = true, userId: Long)
+case class AuthToken(token: String,
+                     createdAt: Timestamp,
+                     expiresAt: Timestamp,
+                     expiredAt: Option[Timestamp],
+                     active: Boolean = true,
+                     userId: Long)
 
 class AuthTokenDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val userDao: UserDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 

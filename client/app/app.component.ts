@@ -4,10 +4,14 @@ import {RouteConfig} from "angular2/router";
 import {ROUTER_DIRECTIVES} from "angular2/router";
 import {Component1} from "./component1.component";
 import {Component2} from "./component2.component";
+import {AuthenticationService} from "./authentication.service";
 
 @Component({
   selector: 'my-app',
   template: `
+    <h2>12323</h2>
+    <button class="btn btn-warning" (click)="auth()">auth</button><br/>
+    <button class="btn btn-warning" (click)="logoff()">logoff</button><br/>
     <span>{{x}}</span>
     <input (keyup.enter)="addName(myName)" #myName/>
     <button (click)="addName(myName)">add</button>
@@ -45,7 +49,7 @@ import {Component2} from "./component2.component";
 export class AppComponent {
   list = Array<Name>();
 
-  constructor(private _myService: MyService) {}
+  constructor(private _myService: MyService, private _authService: AuthenticationService) {}
 
   addName(name) {
     var newName = <Name>{name: name.value, id: this.list.length + 1};
@@ -61,6 +65,14 @@ export class AppComponent {
 
   submitted(form) {
     console.log(form.value);
+  }
+
+  auth() {
+    this._authService.authenticate('god', 'Dsch1982');
+  }
+
+  logoff() {
+    this._authService.logoff();
   }
 }
 
