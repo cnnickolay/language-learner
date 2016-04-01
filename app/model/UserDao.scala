@@ -9,6 +9,7 @@ case class User(id: Option[Long] = None,
                 lastname: Option[String] = None,
                 login: String,
                 passwordHash: String,
+                userStatus: Int,
                 sessionDuration: Int)
 
 class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
@@ -29,9 +30,10 @@ class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider) extends H
     def lastname = column[String]("lastname")
     def login = column[String]("login")
     def passwordHash = column[String]("password_hash")
+    def userStatus = column[Int]("user_status_id")
     def sessionDuration = column[Int]("session_duration")
 
-    def * = (id.?, name.?, lastname.?, login, passwordHash, sessionDuration) <> (User.tupled, User.unapply)
+    def * = (id.?, name.?, lastname.?, login, passwordHash, userStatus, sessionDuration) <> (User.tupled, User.unapply)
   }
 
   val Users = TableQuery[UserTable]

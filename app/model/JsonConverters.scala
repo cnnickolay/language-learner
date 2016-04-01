@@ -20,6 +20,7 @@ object JsonConverters {
     (__ \ "lastname").readNullable[String] and
     (__ \ "login").read[String] and
     (__ \ "passwordHash").read[String] and
+    (__ \ "userStatusId").read[Int] and
     (__ \ "sessionDuration").read[Int]
   )(User.apply _)
 

@@ -1,8 +1,15 @@
+import model.{Active, User, UserDao, MediaDao}
 import org.junit.runner._
 import org.specs2.mutable._
 import org.specs2.runner._
+import play.api.db.slick.DatabaseConfigProvider
 import play.api.test.Helpers._
 import play.api.test._
+import slick.dbio
+import slick.driver.JdbcProfile
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 
 @RunWith(classOf[JUnitRunner])
 class MediaSpec extends Specification {
@@ -15,6 +22,16 @@ class MediaSpec extends Specification {
 
     "get all medias" in new WithApplication(app) {
       val result = route(FakeRequest(GET, "/medias")).get
+      val userDao = app.injector.instanceOf[UserDao]
+      val databaseConfigProvider = app.injector.instanceOf[DatabaseConfigProvider]
+      val dbProvider = databaseConfigProvider.get[JdbcProfile]
+      import dbProvider.driver.api._
+
+      val setup = dbio.DBIO.seq(
+        userDao.Users += User(None, None, None, "zombie", "test", Active.id, 30)
+      )
+      Await.ready(dbProvider.db.run(setup), Duration.Inf)
+      Await.result(userDao.create(User(None, None, None, "test", "test", Active.id, 30)).flatMap(_ => userDao.all.map(user => user.foreach(println))), Duration.Inf)
 
       status(result) must equalTo(OK)
       contentType(result) must beSome.which(_ == "application/json")
