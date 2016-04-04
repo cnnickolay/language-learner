@@ -10,14 +10,14 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   specs2 % Test,
-  "com.typesafe.play" %% "play-slick" % "1.1.1",
-  "com.typesafe.play" %% "play-slick-evolutions" % "1.1.1",
+  "com.typesafe.play" %% "play-slick" % "2.0.0",
+  "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0",
   "org.postgresql" % "postgresql" % "9.4.1208",
   "org.scalatest" % "scalatest_2.11" % "3.0.0-M15",
-  "mysql" % "mysql-connector-java" % "5.1.38",
   "net.sourceforge.htmlunit" % "htmlunit" % "2.20",
   "org.seleniumhq.selenium" % "selenium-java" % "2.49.0",
-  "com.google.guava" % "guava" % "19.0"
+  "com.google.guava" % "guava" % "19.0",
+  "com.h2database" % "h2" % "1.4.191"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
@@ -26,3 +26,4 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
 
+javaOptions in Test += "-Dconfig.file=conf/application_test.conf"

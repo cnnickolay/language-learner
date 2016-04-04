@@ -19,7 +19,10 @@ class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
   }
 
   def byId(mediaGroupId: Long) = authActionWithCORS.async {
-    mediaGroupDao.byId(mediaGroupId).map(all => Ok(Json.toJson(all)))
+    mediaGroupDao.byId(mediaGroupId).map {
+      case Some(mediaGroup) => Ok(Json.toJson(mediaGroup))
+      case None => BadRequest(s"Media group with id $mediaGroupId does not exist")
+    }
   }
 
   def create = authActionWithCORS.async { request =>

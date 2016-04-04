@@ -63,6 +63,7 @@ class SubtitleController @Inject()(val subtitleDao: SubtitleDao,
     } yield Ok(s"Subtitle $subtitleId deleted")
   }
 
+/*
   def uploadSrt(mediaId: Long) =
     authActionWithCORS.async(parse.maxLength(512 * 1024, parser = parse.json(512 * 1024))) { request =>
       Future {
@@ -81,4 +82,5 @@ class SubtitleController @Inject()(val subtitleDao: SubtitleDao,
         }
       }
     }
+*/
 }

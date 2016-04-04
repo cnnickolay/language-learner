@@ -9,7 +9,7 @@ import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.{JsSuccess, Json}
 import play.api.mvc.Controller
-import utils.HashUtils
+import utils.{AuthTokenGenerator, HashUtils}
 import utils.actions.{AuthTokenRefreshAction, ActionsConfiguration, UserAction, CORSAction}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,9 +20,10 @@ import model.JsonConverters._
 class AuthenticationController @Inject()(val userDao: UserDao,
                                          val authTokenDao: AuthTokenDao,
                                          val userAction: UserAction,
-                                         val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
+                                         val authTokenRefreshAction: AuthTokenRefreshAction,
+                                         val authTokenGenerator: AuthTokenGenerator) extends Controller with ActionsConfiguration {
 
-  val l = Logger("utils.actions")
+  val l = Logger(classOf[AuthenticationController])
 
   def obtainToken = CORSAction.async { request =>
     l.debug(request.body.asText.getOrElse(""))
@@ -47,24 +48,27 @@ class AuthenticationController @Inject()(val userDao: UserDao,
             l.debug(s"User ${user.login} found. Creating new security token")
             val now = new DateTime()
             val userId: Long = user.id.getOrElse(-1)
+            val generatedToken: String = authTokenGenerator.nextAuthToken()
             val token = AuthToken(
-              UUID.randomUUID().toString,
+              generatedToken,
               new Timestamp(now.getMillis),
               new Timestamp(new DateTime(now.getMillis).plusMinutes(user.sessionDuration).getMillis),
               None, active = true, userId)
             Await.ready(authTokenDao.create(token), Duration.Inf)
-            Ok(Json.toJson(token))
+            Ok(Json.parse(s"""{"token": "$generatedToken"}"""))
           case Some(token: AuthToken) => Ok(Json.toJson(token))
-          case x @ _ => l.error(s"Not defined $x"); BadRequest("Undentified error")
+          case x @ _ => l.error(s"Not defined $x"); BadRequest("Unidentified error")
         }
-    } getOrElse Future(BadRequest("crap"))
+    } getOrElse Future(BadRequest)
 
   }
 
   def revokeToken = authActionWithCORS.async { request =>
-    request.authToken match {
-      case None => Future(BadRequest("No token to cancel"))
-      case Some(token) => authTokenDao.revokeToken(token.token).map(_ => Ok("Token has been revoked"))
+    Future {
+      request.authToken.map { authToken =>
+        authTokenDao.revokeToken(authToken.token)
+        Ok("Token has been revoked")
+      } getOrElse BadRequest
     }
   }
 

@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class AuthTokenRefreshAction @Inject()(val authTokenDao: AuthTokenDao) extends ActionFunction[UserRequest, UserRequest] {
 
-  val l = Logger("controllers")
+  val l = Logger(classOf[AuthTokenRefreshAction])
 
   def invokeBlock[A](request: UserRequest[A], block: (UserRequest[A]) => Future[Result]): Future[Result] = {
     for {

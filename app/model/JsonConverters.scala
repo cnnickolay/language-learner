@@ -9,6 +9,7 @@ import play.api.libs.json._
 object JsonConverters {
 
   case class UserAuth(login: String, password: String)
+
   implicit val userAuthReads: Reads[UserAuth] = (
     (__ \ "login").read[String] and
     (__ \ "password").read[String]
@@ -20,8 +21,9 @@ object JsonConverters {
     (__ \ "lastname").readNullable[String] and
     (__ \ "login").read[String] and
     (__ \ "passwordHash").read[String] and
-    (__ \ "userStatusId").read[Int] and
-    (__ \ "sessionDuration").read[Int]
+    (__ \ "statusId").read[Int] and
+    (__ \ "sessionDuration").read[Int] and
+    (__ \ "roleId").read[Int]
   )(User.apply _)
 
   implicit val mediaGroupFormat: Format[MediaGroup] = (

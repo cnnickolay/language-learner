@@ -12,7 +12,7 @@ import scala.concurrent.Future
 case class AuthToken(token: String,
                      createdAt: Timestamp,
                      expiresAt: Timestamp,
-                     expiredAt: Option[Timestamp],
+                     expiredAt: Option[Timestamp] = None,
                      active: Boolean = true,
                      userId: Long)
 
@@ -57,7 +57,7 @@ class AuthTokenDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val 
     def active = column[Boolean]("active")
     def userId = column[Long]("user_id")
 
-    def user = foreignKey("user_id", userId, Users)(_.id)
+    def user = foreignKey("auth_token_user_id_fkey", userId, Users)(_.id)
 
     def * = (token, createdAt, expiresAt, expiredAt.?, active, userId) <> (AuthToken.tupled, AuthToken.unapply)
   }

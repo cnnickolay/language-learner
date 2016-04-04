@@ -31,7 +31,7 @@ class SubtitleDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val m
     def text = column[String]("text")
     def mediaId = column[Long]("media_id")
 
-    def media = foreignKey("media_id", mediaId, Medias)(_.id)
+    def media = foreignKey("subtitle_media_id_fkey", mediaId, Medias)(_.id)
 
     def * = (id.?, offset.?, text, mediaId.?) <> (Subtitle.tupled, Subtitle.unapply)
   }

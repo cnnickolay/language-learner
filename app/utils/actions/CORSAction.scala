@@ -8,7 +8,7 @@ import play.api.mvc._
 import scala.concurrent.Future
 
 object CORSAction extends ActionBuilder[Request] with HeaderNames {
-  val l = Logger("utils.actions")
+  val l = Logger(CORSAction.getClass)
 
   def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {
     val futureRes: Future[Result] = block(request)

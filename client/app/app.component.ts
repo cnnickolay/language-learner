@@ -6,6 +6,7 @@ import {Component1} from "./component1.component";
 import {Component2} from "./component2.component";
 import {AuthenticationService} from "./authentication.service";
 
+
 @Component({
   selector: 'my-app',
   template: `
@@ -50,6 +51,7 @@ import {AuthenticationService} from "./authentication.service";
 ])
 export class AppComponent {
   list = Array<Name>();
+
   login: String;
   password: String;
 

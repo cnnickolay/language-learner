@@ -24,7 +24,7 @@ PUT            /medias/:mediaId                         controllers.MediaControl
 
 # Subtitles
 GET            /medias/:mediaId/subtitles               controllers.SubtitleController.getAll(mediaId: Long)
-POST           /medias/:mediaId/subtitles/srt           controllers.SubtitleController.uploadSrt(mediaId: Long)
+#POST           /medias/:mediaId/subtitles/srt           controllers.SubtitleController.uploadSrt(mediaId: Long)
 POST           /medias/:mediaId/subtitles               controllers.SubtitleController.create(mediaId: Long)
 GET            /subtitles/:subtitleId                   controllers.SubtitleController.byId(subtitleId: Long)
 PUT            /subtitles/:subtitleId                   controllers.SubtitleController.update(subtitleId: Long)

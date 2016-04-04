@@ -1,5 +1,5 @@
 # --- !Ups
-ALTER TABLE subtitle ALTER COLUMN "offset" TYPE NUMERIC(6, 1);
+ALTER TABLE media ADD COLUMN description TEXT;
 
 # --- !Downs
-ALTER TABLE subtitle ALTER COLUMN "offset" TYPE DECIMAL;
+ALTER TABLE media DROP COLUMN description;

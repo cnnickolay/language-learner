@@ -4,19 +4,26 @@ import com.google.inject.Inject
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 
+import scala.concurrent.Future
+
 case class User(id: Option[Long] = None,
                 name: Option[String] = None,
                 lastname: Option[String] = None,
                 login: String,
                 passwordHash: String,
-                userStatus: Int,
-                sessionDuration: Int)
+                statusId: Int,
+                sessionDuration: Int,
+                roleId: Int)
 
-class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
+class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider,
+                         val userStatusDao: StatusDao,
+                         val roleDao: RoleDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   import driver.api._
+  import userStatusDao.Statuses
+  import roleDao.Roles
 
-  def all = db.run(Users.result)
+  def all: Future[Seq[User]] = db.run(Users.result)
   def byLoginAndPassword(login: String, passwordHash: String) = db.run {
     Users.filter(user => user.login === login && user.passwordHash === passwordHash).result.headOption
   }
@@ -30,10 +37,14 @@ class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider) extends H
     def lastname = column[String]("lastname")
     def login = column[String]("login")
     def passwordHash = column[String]("password_hash")
-    def userStatus = column[Int]("user_status_id")
+    def statusId = column[Int]("status_id")
     def sessionDuration = column[Int]("session_duration")
+    def roleId = column[Int]("role_id")
 
-    def * = (id.?, name.?, lastname.?, login, passwordHash, userStatus, sessionDuration) <> (User.tupled, User.unapply)
+    def status = foreignKey("user_status_id_fkey", statusId, Statuses)(_.id)
+    def role = foreignKey("user_role_id_fkey", roleId, Roles)(_.id)
+
+    def * = (id.?, name.?, lastname.?, login, passwordHash, statusId, sessionDuration, roleId) <> (User.tupled, User.unapply)
   }
 
   val Users = TableQuery[UserTable]

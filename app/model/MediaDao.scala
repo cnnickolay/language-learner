@@ -28,7 +28,7 @@ class MediaDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider,
     def mediaUrl = column[String]("media_url")
     def mediaGroupId = column[Long]("media_group_id")
 
-    def mediaGroup = foreignKey("media_group_id", mediaGroupId, MediaGroups)(_.id)
+    def mediaGroup = foreignKey("media_media_group_id_fkey", mediaGroupId, MediaGroups)(_.id)
 
     def * = (id.?, name, description.?, mediaUrl, mediaGroupId.?) <> (Media.tupled, Media.unapply)
   }

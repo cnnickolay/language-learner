@@ -15,7 +15,7 @@ class UserRequest[A](val user: Option[User] = None, val authToken: Option[AuthTo
 
 class UserAction @Inject()(val userDao: UserDao, val authTokenDao: AuthTokenDao) extends ActionTransformer[Request, UserRequest] {
 
-  val l = Logger("utils.actions")
+  val l = Logger(classOf[UserAction])
 
   def transform[A](request: Request[A]): Future[UserRequest[A]] = {
     val noUserRequest = new UserRequest(request = request)
@@ -39,7 +39,7 @@ class UserAction @Inject()(val userDao: UserDao, val authTokenDao: AuthTokenDao)
               Await.result(authTokenDao.userByToken(tokenValue), Inf) match {
                 case None => l.debug(s"No user associated with token $tokenValue"); noUserRequest
                 case Some(user) =>
-                  l.debug(s"User ${user.login} found for token $tokenValue");
+                  l.debug(s"User ${user.login} found for token $tokenValue")
                   new UserRequest[A](user = Some(user), authToken = Some(foundToken), request = request)
               }
             }
