@@ -3,9 +3,9 @@ package model
 import java.sql.Timestamp
 import javax.inject.Inject
 
-import org.joda.time.DateTime
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
+import utils.{TimeConversion, TimeService}
 
 import scala.concurrent.Future
 
@@ -16,7 +16,7 @@ case class AuthToken(token: String,
                      active: Boolean = true,
                      userId: Long)
 
-class AuthTokenDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val userDao: UserDao) extends HasDatabaseConfigProvider[JdbcProfile] {
+class AuthTokenDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val userDao: UserDao, val timeService: TimeService) extends HasDatabaseConfigProvider[JdbcProfile] with TimeConversion {
 
   import driver.api._
   import userDao.Users
@@ -33,10 +33,13 @@ class AuthTokenDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val 
   def revokeToken(token: String) = db.run {
     AuthTokens.filter(_.token === token)
       .map(token => (token.active, token.expiredAt))
-      .update(false, new Timestamp(System.currentTimeMillis()))
+      .update(false, timeService.now)
   }
   def findToken(token: String): Future[Option[AuthToken]] = db.run {
     AuthTokens.filter(_.token === token).result.headOption
+  }
+  def findActiveToken(token: String): Future[Option[AuthToken]] = db.run {
+    AuthTokens.filter(authToken => authToken.token === token && authToken.active === true).result.headOption
   }
   def refreshToken(token: String, now: Timestamp) = db.run {
     AuthTokens.filter(_.token === token).map(_.expiresAt).update(now)

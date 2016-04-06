@@ -1,11 +1,12 @@
-import model.{GodRoleEnum, ActiveEnum, User, UserDao}
+package controllers
+
+import model.{ActiveEnum, GodRoleEnum, User, UserDao}
 import slick.backend.DatabaseConfig
 import slick.dbio
 import slick.driver.JdbcProfile
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait AuthenticatedAsGod {
   val dbProvider: DatabaseConfig[JdbcProfile]

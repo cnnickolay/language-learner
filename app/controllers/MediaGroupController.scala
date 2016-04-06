@@ -3,6 +3,7 @@ package controllers
 import com.google.inject.Inject
 import model.{MediaGroup, MediaGroupDao}
 import model.JsonConverters._
+import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{Action, Controller}
 import utils.actions.{AuthTokenRefreshAction, UserAction, ActionsConfiguration, CORSAction}
@@ -13,6 +14,8 @@ import scala.concurrent.Future
 class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
                                      val userAction: UserAction,
                                      val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
+
+  val l = Logger(classOf[MediaGroupController])
 
   def getAll = authActionWithCORS.async {
     mediaGroupDao.all().map(all => Ok(Json.toJson(all)))
@@ -30,7 +33,7 @@ class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
       request.body.asJson.map { json =>
         json.validate[MediaGroup] match {
           case JsSuccess(value, _) => mediaGroupDao.insert(value); Ok("New media group added successfully")
-          case JsError(e) => BadRequest("Failed to parse json")
+          case JsError(e) => l.debug("Failed to parse json"); BadRequest("Failed to parse json")
         }
       }.getOrElse(BadRequest("Failed to process request"))
     }

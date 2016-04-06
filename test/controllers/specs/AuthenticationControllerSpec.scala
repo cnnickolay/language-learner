@@ -1,36 +1,20 @@
-import java.sql.Timestamp
-import java.util.UUID
+package controllers.specs
 
-import com.google.inject.Inject
-import model._
-import org.joda.time.DateTime
+import controllers.{TestSupport, TimeServiceMock, WithLangApplication}
 import org.junit.runner._
+import org.scalatest.concurrent.ScalaFutures
 import org.specs2.mutable._
 import org.specs2.runner._
-import play.api.db.DBApi
-import play.api.db.evolutions.Evolutions
-import play.api.{mvc, inject}
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsLookupResult, JsValue}
-import play.api.test._
-import play.test
-import play.api.test._
 import play.api.test.Helpers._
+import play.api.test._
 import play.libs.Json
-import slick.backend.DatabaseConfig
 import slick.dbio
-import slick.dbio.Effect.{Schema, Write}
-import slick.dbio.{NoStream, DBIOAction, Effect}
-import slick.driver.JdbcProfile
-import utils.{AuthTokenGenerator, DefaultAuthTokenGenerator}
-import scala.concurrent.{Future, Await}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
+
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration.Inf
 
 @RunWith(classOf[JUnitRunner])
-class AuthenticationControllerSpec extends Specification with TestSupport {
+class AuthenticationControllerSpec extends Specification with TestSupport with ScalaFutures {
 
   "POST /auth" should {
     val request = Json.parse {
@@ -41,6 +25,38 @@ class AuthenticationControllerSpec extends Specification with TestSupport {
         |}
       """.stripMargin
     }
+    "successful authentication, existing token revoked due to expiration, new one granted" in new WithLangApplication(app) {
+      import dbProvider.driver.api._
+
+      val token = godRoleUserAuthToken.copy(expiresAt = TimeServiceMock.injectedTime.plusMinutes(20))
+      val user = godRoleUser.copy(sessionDuration = 10)
+      Await.result(dbProvider.db.run(
+        dbio.DBIO.seq(
+          userDao.Users += user,
+          authTokenDao.AuthTokens += token
+        )), Inf)
+
+      TimeServiceMock.injectedTime = TimeServiceMock.injectedTime.plusMinutes(60)
+
+      val result = route(app, FakeRequest(POST, "/auth", FakeHeaders().add(jsonContentTypeHeader), request.toString)).get
+
+      status(result) must equalTo(OK)
+      contentType(result) must beSome.which(_ == "application/json")
+      (contentAsJson(result) \ "token").get.toString must equalTo(s""""$secondAuthToken"""")
+
+      whenReady(authTokenDao.findToken(firstAuthToken))
+      {
+        val expectedAuthToken = token.copy(expiredAt = Some(TimeServiceMock.injectedTime), active = false)
+        _ must equalTo(Some(expectedAuthToken))
+      }
+      whenReady(authTokenDao.findToken(secondAuthToken))
+      {
+        val expectedAuthToken = token.copy(token = secondAuthToken, createdAt = TimeServiceMock.injectedTime,
+          expiresAt = TimeServiceMock.injectedTime.plusMinutes(user.sessionDuration), active = true)
+        _ must equalTo(Some(expectedAuthToken))
+      }
+    }
+
     "successful authentication, creating token" in new WithLangApplication(app) {
       import dbProvider.driver.api._
 
@@ -54,7 +70,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport {
 
       status(result) must equalTo(OK)
       contentType(result) must beSome.which(_ == "application/json")
-      (contentAsJson(result) \ "token").get.toString must equalTo(s""""${AuthTokenGeneratorMock.nextToken}"""")
+      (contentAsJson(result) \ "token").get.toString must equalTo(s""""${firstAuthToken}"""")
     }
 
     "successful authentication, reusing token" in new WithLangApplication(app) {
@@ -66,11 +82,20 @@ class AuthenticationControllerSpec extends Specification with TestSupport {
           authTokenDao.AuthTokens += godRoleUserAuthToken
         )), Inf)
 
+      val minutesPassed = 20
+      TimeServiceMock.injectedTime = TimeServiceMock.injectedTime.plusMinutes(minutesPassed)
+
       val result = route(app, FakeRequest(POST, "/auth", FakeHeaders().add(jsonContentTypeHeader), request.toString)).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome.which(_ == "application/json")
       (contentAsJson(result) \ "token").get.toString must equalTo(s""""${godRoleUserAuthToken.token}"""")
+
+      whenReady(authTokenDao.findToken(godRoleUserAuthToken.token))
+      {
+        val expectedAuthToken = godRoleUserAuthToken.copy(expiresAt = TimeServiceMock.injectedTime.plusMinutes(godRoleUser.sessionDuration))
+        _ must equalTo(Some(expectedAuthToken))
+      }
     }
 
     "authentication failed due to wrong login/password" in new WithLangApplication(app) {

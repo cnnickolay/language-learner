@@ -1,22 +1,16 @@
+package controllers
+
 import model._
+import org.joda.time.DateTime
 import org.specs2.execute.{AsResult, Result}
-import org.specs2.specification.Around
 import play.api.Application
 import play.api.db.DBApi
 import play.api.db.evolutions.Evolutions
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.test.WithApplication
-import slick.backend.DatabaseConfig
-import slick.dbio.Effect.{Schema, Write}
-import slick.dbio.{Effect, NoStream, DBIOAction}
-import slick.{driver, dbio}
 import slick.driver.JdbcProfile
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration.Duration.Inf
-
-abstract class WithLangApplication(app: Application) extends WithApplication(app) {
+abstract class WithLangApplication extends WithApplication(app) with TestSupport {
 
   lazy val databaseConfigProvider = app.injector.instanceOf[DatabaseConfigProvider]
   lazy val dbProvider = databaseConfigProvider.get[JdbcProfile]
@@ -34,7 +28,11 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
     Evolutions.cleanupEvolutions(databaseApi.database("default"))
     Evolutions.applyEvolutions(databaseApi.database("default"))
 
+    TimeServiceMock.injectedTime = DateTime.now().withYear(2015).withMonthOfYear(1).withDayOfMonth(1).withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0)
+
     super.around(t)
   }
+
+
 
 }

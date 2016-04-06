@@ -1,27 +1,24 @@
 package controllers
 
-import java.sql.Timestamp
-import java.util.UUID
-
 import com.google.inject.Inject
-import model.{User, AuthToken, AuthTokenDao, UserDao}
-import org.joda.time.DateTime
+import model.JsonConverters._
+import model.{AuthToken, AuthTokenDao, User, UserDao}
 import play.api.Logger
 import play.api.libs.json.{JsSuccess, Json}
 import play.api.mvc.Controller
-import utils.{AuthTokenGenerator, HashUtils}
-import utils.actions.{AuthTokenRefreshAction, ActionsConfiguration, UserAction, CORSAction}
+import utils.actions.{ActionsConfiguration, AuthTokenRefreshAction, CORSAction, UserAction}
+import utils.{AuthTokenGenerator, HashUtils, TimeConversion, TimeService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
-import model.JsonConverters._
 
 class AuthenticationController @Inject()(val userDao: UserDao,
                                          val authTokenDao: AuthTokenDao,
                                          val userAction: UserAction,
                                          val authTokenRefreshAction: AuthTokenRefreshAction,
-                                         val authTokenGenerator: AuthTokenGenerator) extends Controller with ActionsConfiguration {
+                                         val authTokenGenerator: AuthTokenGenerator,
+                                         val timeService: TimeService) extends Controller with ActionsConfiguration with TimeConversion {
 
   val l = Logger(classOf[AuthenticationController])
 
@@ -37,8 +34,23 @@ class AuthenticationController @Inject()(val userDao: UserDao,
       case Some(user) =>
         val passwordHash = HashUtils.calculateSha256(user.password)
         authTokenDao.findActiveTokenByUser(user.login, passwordHash) flatMap {
-          case foundToken @ Some(token) => l.debug(s"Existing token found ${token.token}"); Future(foundToken)
-          case None => l.debug("Token not found, creating a new one"); userDao.byLoginAndPassword(user.login, passwordHash)
+          case foundToken @ Some(token) =>
+            val now = timeService.now
+            if (now.before(token.expiresAt)) {
+              for {
+                Some(user) <- userDao.byLoginAndPassword(user.login, passwordHash)
+                expirationDate = now.plusMinutes(user.sessionDuration)
+                _ <- authTokenDao.refreshToken(token.token, expirationDate)
+                authToken <- authTokenDao.findActiveToken(token.token)
+              } yield {
+                authToken
+              }
+            } else {
+              authTokenDao.revokeToken(token.token).flatMap(_ => userDao.byLoginAndPassword(user.login, passwordHash))
+            }
+          case None =>
+            l.debug("Token not found, creating a new one")
+            userDao.byLoginAndPassword(user.login, passwordHash)
         } map {
           case None =>
             val err = s"User with login ${user.login} and password hash $passwordHash not found"
@@ -46,13 +58,13 @@ class AuthenticationController @Inject()(val userDao: UserDao,
             Unauthorized(err)
           case Some(user: User) =>
             l.debug(s"User ${user.login} found. Creating new security token")
-            val now = new DateTime()
+            val now = timeService.now
             val userId: Long = user.id.getOrElse(-1)
             val generatedToken: String = authTokenGenerator.nextAuthToken()
             val token = AuthToken(
               generatedToken,
-              new Timestamp(now.getMillis),
-              new Timestamp(new DateTime(now.getMillis).plusMinutes(user.sessionDuration).getMillis),
+              now,
+              now.plusMinutes(user.sessionDuration),
               None, active = true, userId)
             Await.ready(authTokenDao.create(token), Duration.Inf)
             Ok(Json.parse(s"""{"token": "$generatedToken"}"""))

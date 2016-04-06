@@ -6,6 +6,7 @@ import com.google.inject.Inject
 import model.{AuthToken, AuthTokenDao, User, UserDao}
 import play.api.Logger
 import play.api.mvc._
+import utils.{TimeService, TimeConversion}
 
 import scala.concurrent.duration.Duration.Inf
 import scala.concurrent.{Await, Future}
@@ -13,7 +14,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class UserRequest[A](val user: Option[User] = None, val authToken: Option[AuthToken] = None, request: Request[A]) extends WrappedRequest[A](request)
 
-class UserAction @Inject()(val userDao: UserDao, val authTokenDao: AuthTokenDao) extends ActionTransformer[Request, UserRequest] {
+class UserAction @Inject()(val userDao: UserDao, val authTokenDao: AuthTokenDao, val timeService: TimeService) extends ActionTransformer[Request, UserRequest] with TimeConversion {
 
   val l = Logger(classOf[UserAction])
 
@@ -31,7 +32,7 @@ class UserAction @Inject()(val userDao: UserDao, val authTokenDao: AuthTokenDao)
             if (!foundToken.active) {
               l.debug(s"Token $tokenValue is expired")
               noUserRequest
-            } else if (foundToken.expiresAt.before(new Timestamp(System.currentTimeMillis()))) { // check if auth token is overdue
+            } else if (foundToken.expiresAt.before(timeService.now)) { // check if auth token is overdue
               l.debug(s"Token $tokenValue is overdue and will be cancelled")
               Await.result(authTokenDao.revokeToken(tokenValue), Inf)
               noUserRequest
