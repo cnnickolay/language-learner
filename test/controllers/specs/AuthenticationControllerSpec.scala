@@ -25,6 +25,23 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
         |}
       """.stripMargin
     }
+
+    "successful authentication, creating token" in new WithLangApplication(app) {
+      import dbProvider.driver.api._
+
+      Await.result(dbProvider.db.run(
+        dbio.DBIO.seq(
+          userDao.Users += godRoleUser
+        )
+      ), Inf)
+
+      val result = route(app, FakeRequest(POST, "/auth", FakeHeaders().add(jsonContentTypeHeader), request.toString)).get
+
+      status(result) must equalTo(OK)
+      contentType(result) must beSome.which(_ == "application/json")
+      (contentAsJson(result) \ "token").get.toString must equalTo(s""""$firstAuthToken"""")
+    }
+
     "successful authentication, existing token revoked due to expiration, new one granted" in new WithLangApplication(app) {
       import dbProvider.driver.api._
 
@@ -57,29 +74,14 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
       }
     }
 
-    "successful authentication, creating token" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser
-        )
-      ), Inf)
-
-      val result = route(app, FakeRequest(POST, "/auth", FakeHeaders().add(jsonContentTypeHeader), request.toString)).get
-
-      status(result) must equalTo(OK)
-      contentType(result) must beSome.which(_ == "application/json")
-      (contentAsJson(result) \ "token").get.toString must equalTo(s""""${firstAuthToken}"""")
-    }
-
     "successful authentication, reusing token" in new WithLangApplication(app) {
       import dbProvider.driver.api._
 
+      val authToken = godRoleUserAuthToken
       Await.result(dbProvider.db.run(
         dbio.DBIO.seq(
           userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += godRoleUserAuthToken
+          authTokenDao.AuthTokens += authToken
         )), Inf)
 
       val minutesPassed = 20
@@ -89,11 +91,11 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
       status(result) must equalTo(OK)
       contentType(result) must beSome.which(_ == "application/json")
-      (contentAsJson(result) \ "token").get.toString must equalTo(s""""${godRoleUserAuthToken.token}"""")
+      (contentAsJson(result) \ "token").get.toString must equalTo(s""""${authToken.token}"""")
 
-      whenReady(authTokenDao.findToken(godRoleUserAuthToken.token))
+      whenReady(authTokenDao.findToken(authToken.token))
       {
-        val expectedAuthToken = godRoleUserAuthToken.copy(expiresAt = TimeServiceMock.injectedTime.plusMinutes(godRoleUser.sessionDuration))
+        val expectedAuthToken = authToken.copy(expiresAt = TimeServiceMock.injectedTime.plusMinutes(godRoleUser.sessionDuration))
         _ must equalTo(Some(expectedAuthToken))
       }
     }
@@ -117,14 +119,15 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     "allow user to log out" in new WithLangApplication(app) {
       import dbProvider.driver.api._
 
+      val authToken = godRoleUserAuthToken
       Await.result(dbProvider.db.run(
         dbio.DBIO.seq(
           userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += godRoleUserAuthToken
+          authTokenDao.AuthTokens += authToken
         )), Inf)
 
 
-      val result = route(app, FakeRequest(DELETE, "/auth", FakeHeaders().add(tokenHeader(godRoleUserAuthToken.token)), "")).get
+      val result = route(app, FakeRequest(DELETE, "/auth", FakeHeaders().add(tokenHeader(authToken.token)), "")).get
 
       status(result) must equalTo(OK)
       contentAsString(result) must equalTo("Token has been revoked")
@@ -133,13 +136,14 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     "do nothing if wrong token provided" in new WithLangApplication(app) {
       import dbProvider.driver.api._
 
+      val authToken = godRoleUserAuthToken
       Await.result(dbProvider.db.run(
         dbio.DBIO.seq(
           userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += godRoleUserAuthToken.copy(active = false)
+          authTokenDao.AuthTokens += authToken.copy(active = false)
         )), Inf)
 
-      val result = route(app, FakeRequest(DELETE, "/auth", FakeHeaders().add(tokenHeader(godRoleUserAuthToken.token)), "")).get
+      val result = route(app, FakeRequest(DELETE, "/auth", FakeHeaders().add(tokenHeader(authToken.token)), "")).get
 
       status(result) must equalTo(UNAUTHORIZED)
     }

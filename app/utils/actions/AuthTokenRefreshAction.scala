@@ -56,7 +56,6 @@ class AuthTokenRefreshAction @Inject()(val authTokenDao: AuthTokenDao, val timeS
               Await.result(authTokenDao.refreshToken(authToken.token, newExpirationDate), Duration.Inf)
           }
       }
-      println("========== " + Await.result(authTokenDao.refreshToken("d67bc960-7891-4f2e-bfd1-9acf264524b0", timeService.now.plusMinutes(35)), Duration.Inf))
       result
     }
   }

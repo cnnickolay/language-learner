@@ -10,7 +10,7 @@ import play.api.db.slick.DatabaseConfigProvider
 import play.api.test.WithApplication
 import slick.driver.JdbcProfile
 
-abstract class WithLangApplication extends WithApplication(app) with TestSupport {
+abstract class WithLangApplication(app: Application) extends WithApplication(app) {
 
   lazy val databaseConfigProvider = app.injector.instanceOf[DatabaseConfigProvider]
   lazy val dbProvider = databaseConfigProvider.get[JdbcProfile]
@@ -32,7 +32,5 @@ abstract class WithLangApplication extends WithApplication(app) with TestSupport
 
     super.around(t)
   }
-
-
 
 }
