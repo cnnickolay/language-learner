@@ -84,4 +84,8 @@ class AuthenticationController @Inject()(val userDao: UserDao,
     }
   }
 
+  def refreshToken = authActionWithCORS {
+    Ok("Token refreshed")
+  }
+
 }

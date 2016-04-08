@@ -7,6 +7,7 @@ OPTIONS        /*path                                   controllers.ApplicationC
 # Authentication
 POST           /auth                                    controllers.AuthenticationController.obtainToken
 DELETE         /auth                                    controllers.AuthenticationController.revokeToken
+GET            /auth                                    controllers.AuthenticationController.refreshToken
 
 # Media groups
 GET            /mediaGroups/:mediaGroupId               controllers.MediaGroupController.byId(mediaGroupId: Long)

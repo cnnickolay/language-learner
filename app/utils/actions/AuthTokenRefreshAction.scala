@@ -1,25 +1,19 @@
 package utils.actions
 
-import java.sql.Timestamp
-
 import com.google.inject.Inject
 import model.AuthTokenDao
 import play.api.Logger
 import play.api.mvc.{ActionFunction, Result}
 import utils.{TimeConversion, TimeService}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class AuthTokenRefreshAction @Inject()(val authTokenDao: AuthTokenDao, val timeService: TimeService) extends ActionFunction[UserRequest, UserRequest] with TimeConversion {
 
   val l = Logger(classOf[AuthTokenRefreshAction])
 
-/*
   def invokeBlock[A](request: UserRequest[A], block: (UserRequest[A]) => Future[Result]): Future[Result] = {
-    val result = block(request)
-
     val refreshToken: Option[Future[Int]] = for {
       authToken <- request.authToken
       user <- request.user
@@ -28,35 +22,13 @@ class AuthTokenRefreshAction @Inject()(val authTokenDao: AuthTokenDao, val timeS
       authTokenDao.refreshToken(authToken.token, timeService.now.plusMinutes(user.sessionDuration))
     }
 
-    for {
-      _ <- refreshToken.get
-
+    val refreshTokenFuture = refreshToken match {
+      case Some(future: Future[_]) => future
+      case _ => Future(None)
     }
 
-    //    refreshToken match {
-    //      case None =>
-    //      case Some(x: Future[Int]) =>
-    //        x.map(_).map(_ => result)
-    //    }
-  }
-*/
-
-  def invokeBlock[A](request: UserRequest[A], block: (UserRequest[A]) => Future[Result]): Future[Result] = {
-    for {
-      result <- block(request)
-    } yield {
-      request.authToken match {
-        case None =>
-        case Some(authToken) =>
-          request.user match {
-            case None =>
-            case Some(user) =>
-              val newExpirationDate = timeService.now.plusMinutes(user.sessionDuration)
-              l.debug(s"Refreshing expiration date of token ${authToken.token} to ${newExpirationDate}")
-              Await.result(authTokenDao.refreshToken(authToken.token, newExpirationDate), Duration.Inf)
-          }
-      }
-      result
+    refreshTokenFuture.flatMap { _ =>
+      block(request)
     }
   }
 

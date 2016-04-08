@@ -28,8 +28,6 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
     Evolutions.cleanupEvolutions(databaseApi.database("default"))
     Evolutions.applyEvolutions(databaseApi.database("default"))
 
-    TimeServiceMock.injectedTime = DateTime.now().withYear(2015).withMonthOfYear(1).withDayOfMonth(1).withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0)
-
     super.around(t)
   }
 

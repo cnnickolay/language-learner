@@ -1,6 +1,6 @@
 package controllers.specs
 
-import controllers.{TestSupport, TimeServiceMock, WithLangApplication}
+import controllers.{TestSupport, WithLangApplication}
 import org.junit.runner._
 import org.scalatest.concurrent.ScalaFutures
 import org.specs2.mutable._
@@ -15,6 +15,30 @@ import scala.concurrent.duration.Duration.Inf
 
 @RunWith(classOf[JUnitRunner])
 class AuthenticationControllerSpec extends Specification with TestSupport with ScalaFutures {
+
+  "GET /auth" should {
+    "refresh token timestamp" in new WithLangApplication(app) {
+      import dbProvider.driver.api._
+
+      val token = godRoleUserAuthToken
+      val user = godRoleUser
+      Await.result(dbProvider.db.run(
+        dbio.DBIO.seq(
+          userDao.Users += user,
+          authTokenDao.AuthTokens += token
+        )), Inf)
+
+      minutesPassed(10)
+
+      val result = route(app, FakeRequest(GET, "/auth", FakeHeaders().add(tokenHeader(token.token)), "")).get
+      status(result) must equalTo(OK)
+
+      whenReady(authTokenDao.findToken(firstAuthToken)) {
+        val expectedAuthToken = token.copy(expiresAt = presentTime.plusMinutes(user.sessionDuration))
+        _ must equalTo(Some(expectedAuthToken))
+      }
+    }
+  }
 
   "POST /auth" should {
     val request = Json.parse {
@@ -45,7 +69,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     "successful authentication, existing token revoked due to expiration, new one granted" in new WithLangApplication(app) {
       import dbProvider.driver.api._
 
-      val token = godRoleUserAuthToken.copy(expiresAt = TimeServiceMock.injectedTime.plusMinutes(20))
+      val token = godRoleUserAuthToken.copy(expiresAt = presentTime.plusMinutes(20))
       val user = godRoleUser.copy(sessionDuration = 10)
       Await.result(dbProvider.db.run(
         dbio.DBIO.seq(
@@ -53,7 +77,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
           authTokenDao.AuthTokens += token
         )), Inf)
 
-      TimeServiceMock.injectedTime = TimeServiceMock.injectedTime.plusMinutes(60)
+      minutesPassed(60)
 
       val result = route(app, FakeRequest(POST, "/auth", FakeHeaders().add(jsonContentTypeHeader), request.toString)).get
 
@@ -63,13 +87,13 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
       whenReady(authTokenDao.findToken(firstAuthToken))
       {
-        val expectedAuthToken = token.copy(expiredAt = Some(TimeServiceMock.injectedTime), active = false)
+        val expectedAuthToken = token.copy(expiredAt = Some(presentTime), active = false)
         _ must equalTo(Some(expectedAuthToken))
       }
       whenReady(authTokenDao.findToken(secondAuthToken))
       {
-        val expectedAuthToken = token.copy(token = secondAuthToken, createdAt = TimeServiceMock.injectedTime,
-          expiresAt = TimeServiceMock.injectedTime.plusMinutes(user.sessionDuration), active = true)
+        val expectedAuthToken = token.copy(token = secondAuthToken, createdAt = presentTime,
+          expiresAt = presentTime.plusMinutes(user.sessionDuration), active = true)
         _ must equalTo(Some(expectedAuthToken))
       }
     }
@@ -84,8 +108,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
           authTokenDao.AuthTokens += authToken
         )), Inf)
 
-      val minutesPassed = 20
-      TimeServiceMock.injectedTime = TimeServiceMock.injectedTime.plusMinutes(minutesPassed)
+      minutesPassed(20)
 
       val result = route(app, FakeRequest(POST, "/auth", FakeHeaders().add(jsonContentTypeHeader), request.toString)).get
 
@@ -95,7 +118,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
       whenReady(authTokenDao.findToken(authToken.token))
       {
-        val expectedAuthToken = authToken.copy(expiresAt = TimeServiceMock.injectedTime.plusMinutes(godRoleUser.sessionDuration))
+        val expectedAuthToken = authToken.copy(expiresAt = presentTime.plusMinutes(godRoleUser.sessionDuration))
         _ must equalTo(Some(expectedAuthToken))
       }
     }
