@@ -6,7 +6,7 @@ import slick.driver.JdbcProfile
 
 import scala.concurrent.Future
 
-case class MediaGroup(id: Option[Long], name: String, description: Option[String], languageId: Int)
+case class MediaGroup(id: Option[Long] = None, name: String, description: Option[String] = None, languageId: Int)
 
 class MediaGroupDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider, val languageDao: LanguageDao) extends HasDatabaseConfigProvider[JdbcProfile] {
 

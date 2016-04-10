@@ -1,7 +1,6 @@
 package controllers
 
 import model._
-import org.joda.time.DateTime
 import org.specs2.execute.{AsResult, Result}
 import play.api.Application
 import play.api.db.DBApi

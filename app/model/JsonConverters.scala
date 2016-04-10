@@ -26,13 +26,6 @@ object JsonConverters {
     (__ \ "roleId").read[Int]
   )(User.apply _)
 
-  implicit val mediaGroupFormat: Format[MediaGroup] = (
-    (__ \ "id").formatNullable[Long] and
-    (__ \ "name").format[String] and
-    (__ \ "description").formatNullable[String] and
-    (__ \ "languageId").format[Int]
-  )(MediaGroup.apply, unlift(MediaGroup.unapply))
-
   implicit val mediaFormat: Format[Media] = (
     (__ \ "id").formatNullable[Long] and
     (__ \ "name").format[String] and

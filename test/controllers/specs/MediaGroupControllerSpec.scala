@@ -41,13 +41,11 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
         """
           |[
           |  {
-          |    "id": 1,
           |    "name": "Group 1",
           |    "description": "description for group 1",
           |    "languageId": 1
           |  },
           |  {
-          |    "id": 2,
           |    "name": "Group 2",
           |    "languageId": 2
           |  }
@@ -79,7 +77,6 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
       contentAsJson(result) should equalTo(Json.parse(
         """
           |{
-          |  "id": 1,
           |  "name": "Group 1",
           |  "description": "description for group 1",
           |  "languageId": 1
@@ -132,6 +129,32 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
       val result = route(app, FakeRequest(POST, "/mediaGroups", FakeHeaders().add(tokenHeader(authToken.token)).add(jsonContentTypeHeader), request)).get
       status(result) should equalTo(OK)
       whenReady(mediaGroupDao.byName(name)) { _ must equalTo(Some(MediaGroup(Some(1), name, Some(description), 1))) }
+    }
+
+    "fail to create new media group due to lack of media group name" in new WithLangApplication(app) with FakeDataGen {
+      import dbProvider.driver.api._
+
+      val name = generateText(20)
+      val description = generateText(100)
+      val request =
+        s"""
+          |{
+          |  "description": "$description",
+          |  "languageId": 1
+          |}
+        """.stripMargin
+
+      val authToken = godRoleUserAuthToken
+      Await.result(dbProvider.db.run(
+        dbio.DBIO.seq(
+          userDao.Users += godRoleUser,
+          authTokenDao.AuthTokens += authToken
+        )
+      ), Inf)
+
+      val result = route(app, FakeRequest(POST, "/mediaGroups", FakeHeaders().add(tokenHeader(authToken.token)).add(jsonContentTypeHeader), request)).get
+      status(result) should equalTo(BAD_REQUEST)
+      whenReady(mediaGroupDao.all()) { _ must have size 0 }
     }
   }
 
