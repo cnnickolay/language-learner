@@ -53,9 +53,10 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     "successful authentication, creating token" in new WithLangApplication(app) {
       import dbProvider.driver.api._
 
+      val user = godRoleUser
       Await.result(dbProvider.db.run(
         dbio.DBIO.seq(
-          userDao.Users += godRoleUser
+          userDao.Users += user
         )
       ), Inf)
 
@@ -63,7 +64,8 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
       status(result) must equalTo(OK)
       contentType(result) must beSome.which(_ == "application/json")
-      (contentAsJson(result) \ "token").get.toString must equalTo(s""""$firstAuthToken"""")
+      (contentAsJson(result) \ "token").as[String] must equalTo(s"$firstAuthToken")
+      (contentAsJson(result) \ "expiresAt").as[Long] must equalTo(presentTime.plusMinutes(user.sessionDuration).getMillis)
     }
 
     "successful authentication, existing token revoked due to expiration, new one granted" in new WithLangApplication(app) {
@@ -83,7 +85,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
       status(result) must equalTo(OK)
       contentType(result) must beSome.which(_ == "application/json")
-      (contentAsJson(result) \ "token").get.toString must equalTo(s""""$secondAuthToken"""")
+      (contentAsJson(result) \ "token").as[String] must equalTo(s"$secondAuthToken")
 
       whenReady(authTokenDao.findToken(firstAuthToken))
       {
@@ -114,7 +116,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
       status(result) must equalTo(OK)
       contentType(result) must beSome.which(_ == "application/json")
-      (contentAsJson(result) \ "token").get.toString must equalTo(s""""${authToken.token}"""")
+      (contentAsJson(result) \ "token").as[String] must equalTo(s"${authToken.token}")
 
       whenReady(authTokenDao.findToken(authToken.token))
       {

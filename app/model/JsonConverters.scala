@@ -8,24 +8,6 @@ import play.api.libs.json._
 
 object JsonConverters {
 
-  case class UserAuth(login: String, password: String)
-
-  implicit val userAuthReads: Reads[UserAuth] = (
-    (__ \ "login").read[String] and
-    (__ \ "password").read[String]
-  )(UserAuth.apply _)
-
-  implicit val userReads: Reads[User] = (
-    (__ \ "id").readNullable[Long] and
-    (__ \ "name").readNullable[String] and
-    (__ \ "lastname").readNullable[String] and
-    (__ \ "login").read[String] and
-    (__ \ "passwordHash").read[String] and
-    (__ \ "statusId").read[Int] and
-    (__ \ "sessionDuration").read[Int] and
-    (__ \ "roleId").read[Int]
-  )(User.apply _)
-
   implicit val mediaFormat: Format[Media] = (
     (__ \ "id").formatNullable[Long] and
     (__ \ "name").format[String] and
@@ -50,14 +32,5 @@ object JsonConverters {
     (__ \ "mediaId").readNullable[Long] and
     (__ \ "srt").read[String]
   )(SubtitlesSrtRaw.apply _)
-
-  implicit val authTokenWrites: Writes[AuthToken] = (
-    (__ \ "token").write[String] and
-    (__ \ "createdAt").write[Timestamp] and
-    (__ \ "expiresAt").write[Timestamp] and
-    (__ \ "expiredAt").writeNullable[Timestamp] and
-    (__ \ "active").write[Boolean] and
-    (__ \ "userId").write[Long]
-  )(unlift(AuthToken.unapply))
 
 }
