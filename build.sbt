@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "3.0.0-M15",
   "net.sourceforge.htmlunit" % "htmlunit" % "2.20",
   "org.seleniumhq.selenium" % "selenium-java" % "2.49.0",
-  "com.google.guava" % "guava" % "19.0",
   "com.h2database" % "h2" % "1.4.191"
 )
 

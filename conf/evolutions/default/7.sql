@@ -15,21 +15,21 @@ CREATE TABLE lesson (
   course_id BIGINT REFERENCES course (id)
 );
 
-CREATE TABLE sound_track (
-  id           BIGSERIAL PRIMARY KEY,
-  url          VARCHAR(255) NOT NULL,
-  offset_start NUMERIC(6, 1),
-  offset_end   NUMERIC(6, 1)
+CREATE TABLE exercise_block (
+  id         BIGSERIAL PRIMARY KEY,
+  desription TEXT,
+  lesson_id  BIGINT NOT NULL REFERENCES lesson (id),
+  idx        INT    NOT NULL,
+  UNIQUE (lesson_id, idx)
 );
-COMMENT ON TABLE sound_track IS 'a sound track which can be used by an exercise or by a chunk';
-COMMENT ON COLUMN sound_track.offset_start IS 'defines an offset on a sound track file in seconds';
+COMMENT ON TABLE exercise_block IS 'lesson consists of exercise blocks, which in turn consists of exercises';
+COMMENT ON COLUMN exercise_block.desription IS 'should contain instructions for passing exercise block';
 
 CREATE TABLE exercise (
-  id             BIGSERIAL PRIMARY KEY,
-  lesson_id      INT NOT NULL REFERENCES lesson (id),
-  idx            INT NOT NULL,
-  sound_track_id BIGINT REFERENCES sound_track (id),
-  UNIQUE (lesson_id, idx)
+  id                BIGSERIAL PRIMARY KEY,
+  exercise_block_id BIGINT NOT NULL REFERENCES exercise_block (id),
+  idx               INT    NOT NULL,
+  UNIQUE (exercise_block_id, idx)
 );
 
 CREATE TABLE chunk (
@@ -48,22 +48,53 @@ CREATE TABLE gap (
   chunk_id BIGINT PRIMARY KEY NOT NULL REFERENCES chunk (id) ON DELETE CASCADE,
   text     VARCHAR(255)
 );
+COMMENT ON TABLE gap IS 'missing part in an exercise which student has to fill in to test his knowledge';
+COMMENT ON COLUMN gap.text IS 'default answer, can be used in case if there is only one correct answer for the gap, otherwise answer table should be used';
 
-CREATE TABLE answer (
-  exercise_id BIGINT REFERENCES exercise (id),
-  gap_id      BIGINT REFERENCES gap (chunk_id),
-  idx         INT          NOT NULL,
-  text        VARCHAR(255) NOT NULL,
-  PRIMARY KEY (exercise_id, gap_id, idx, text)
+CREATE TABLE gap_answer (
+  gap_id BIGINT REFERENCES gap (chunk_id),
+  text   VARCHAR(255) NOT NULL,
+  PRIMARY KEY (gap_id, text)
+);
+COMMENT ON TABLE gap_answer IS 'answers for the gap, this table should be used only if there are many possible answers for the gap';
+
+-- ---------- DIALOGUES
+CREATE TABLE sound_track (
+  id  BIGSERIAL PRIMARY KEY,
+  url VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE dialogue (
+  id             BIGSERIAL PRIMARY KEY,
+  "name"         VARCHAR(255) NOT NULL,
+  sound_track_id BIGINT REFERENCES sound_track (id)
+);
+
+CREATE TABLE speech (
+  id          BIGSERIAL PRIMARY KEY,
+  speaker     VARCHAR(50),
+  idx         INT NOT NULL,
+  dialogue_id BIGINT REFERENCES dialogue (id),
+  UNIQUE (dialogue_id, idx)
+);
+
+CREATE TABLE phrase (
+  id        BIGSERIAL PRIMARY KEY,
+  text      VARCHAR(255) NOT NULL,
+  "offset"  NUMERIC(6, 1),
+  speech_id BIGINT       NOT NULL REFERENCES speech (id)
 );
 
 # --- !Downs
-
-DROP TABLE answer;
+DROP TABLE phrase;
+DROP TABLE speech;
+DROP TABLE dialogue;
+DROP TABLE sound_track;
+DROP TABLE gap_answer;
 DROP TABLE gap;
 DROP TABLE text;
 DROP TABLE chunk;
 DROP TABLE exercise;
-DROP TABLE sound_track;
+DROP TABLE exercise_block;
 DROP TABLE lesson;
 DROP TABLE course;
