@@ -1,6 +1,7 @@
 package controllers.specs
 
 import controllers.{TestSupport, WithLangApplication}
+import model.User
 import org.junit.runner._
 import org.scalatest.concurrent.ScalaFutures
 import org.specs2.mutable._
@@ -18,15 +19,10 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
   "GET /auth" should {
     "refresh token timestamp" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val token = godRoleUserAuthToken
-      val user = godRoleUser
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += user,
-          authTokenDao.AuthTokens += token
-        )), Inf)
+      lazy val token = godRoleUserAuthToken
+      lazy val user = godRoleUser
+      override def initUsers = Seq(user)
+      override def initAuthTokens = Seq(token)
 
       minutesPassed(10)
 
@@ -51,14 +47,8 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     }
 
     "successful authentication, creating token" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val user = godRoleUser
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += user
-        )
-      ), Inf)
+      lazy val user = godRoleUser
+      override def initUsers = Seq(user)
 
       val result = route(app, FakeRequest(POST, "/auth", FakeHeaders().add(jsonContentTypeHeader), request.toString)).get
 
@@ -69,15 +59,10 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     }
 
     "successful authentication, existing token revoked due to expiration, new one granted" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val token = godRoleUserAuthToken.copy(expiresAt = presentTime.plusMinutes(20))
-      val user = godRoleUser.copy(sessionDuration = 10)
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += user,
-          authTokenDao.AuthTokens += token
-        )), Inf)
+      lazy val authToken = godRoleUserAuthToken.copy(expiresAt = presentTime.plusMinutes(20))
+      lazy val user = godRoleUser.copy(sessionDuration = 10)
+      override def initUsers = Seq(user)
+      override def initAuthTokens = Seq(authToken)
 
       minutesPassed(60)
 
@@ -89,26 +74,21 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
       whenReady(authTokenDao.findToken(firstAuthToken))
       {
-        val expectedAuthToken = token.copy(expiredAt = Some(presentTime), active = false)
+        val expectedAuthToken = authToken.copy(expiredAt = Some(presentTime), active = false)
         _ must equalTo(Some(expectedAuthToken))
       }
       whenReady(authTokenDao.findToken(secondAuthToken))
       {
-        val expectedAuthToken = token.copy(token = secondAuthToken, createdAt = presentTime,
+        val expectedAuthToken = authToken.copy(token = secondAuthToken, createdAt = presentTime,
           expiresAt = presentTime.plusMinutes(user.sessionDuration), active = true)
         _ must equalTo(Some(expectedAuthToken))
       }
     }
 
     "successful authentication, reusing token" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken
-        )), Inf)
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken)
 
       minutesPassed(20)
 
@@ -142,15 +122,9 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
   "DELETE /auth" should {
     "allow user to log out" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken
-        )), Inf)
-
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken)
 
       val result = route(app, FakeRequest(DELETE, "/auth", FakeHeaders().add(tokenHeader(authToken.token)), "")).get
 
@@ -159,14 +133,9 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     }
 
     "do nothing if wrong token provided" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken.copy(active = false)
-        )), Inf)
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken.copy(active = false))
 
       val result = route(app, FakeRequest(DELETE, "/auth", FakeHeaders().add(tokenHeader(authToken.token)), "")).get
 

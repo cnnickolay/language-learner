@@ -9,10 +9,6 @@ import org.specs2.runner._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import slick.dbio
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration._
 
 @RunWith(classOf[JUnitRunner])
 class MediaGroupControllerSpec extends Specification with TestSupport with ScalaFutures {
@@ -20,19 +16,13 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
   "GET /mediaGroups" should {
 
     "return all existing media groups" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken,
-          mediaGroupDao.MediaGroups ++= Seq(
-            MediaGroup(Some(1), "Group 1", Some("description for group 1"), 1),
-            MediaGroup(Some(2), "Group 2", None, 2)
-          )
-        )
-      ), Inf)
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken)
+      override def initMediaGroups = Seq(
+        MediaGroup(Some(1), "Group 1", Some("description for group 1"), 1),
+        MediaGroup(Some(2), "Group 2", None, 2)
+      )
 
       val result = route(app, FakeRequest(GET, "/mediaGroups", FakeHeaders().add(tokenHeader(authToken.token)), "")).get
 
@@ -51,25 +41,19 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
           |  }
           |]
         """.stripMargin))
-    }
 
+    }
   }
 
   "GET /mediaGroups/:id" should {
 
     "return one media group if it exists" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken,
-          mediaGroupDao.MediaGroups ++= Seq(
-            MediaGroup(Some(1), "Group 1", Some("description for group 1"), 1)
-          )
-        )
-      ), Inf)
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken)
+      override def initMediaGroups = Seq(
+        MediaGroup(Some(1), "Group 1", Some("description for group 1"), 1)
+      )
 
       val result = route(app, FakeRequest(GET, "/mediaGroups/1", FakeHeaders().add(tokenHeader(authToken.token)), "")).get
 
@@ -85,15 +69,9 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
     }
 
     "return error if media group does not exist" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken
-        )
-      ), Inf)
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken)
 
       val result = route(app, FakeRequest(GET, "/mediaGroups/1", FakeHeaders().add(tokenHeader(authToken.token)), "")).get
 
@@ -105,8 +83,6 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
   "POST /mediaGroups" should {
 
     "create new media group" in new WithLangApplication(app) with FakeDataGen {
-      import dbProvider.driver.api._
-
       val name = generateText(20)
       val description = generateText(100)
       val request =
@@ -118,13 +94,9 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
           |}
         """.stripMargin
 
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken
-        )
-      ), Inf)
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken)
 
       val result = route(app, FakeRequest(POST, "/mediaGroups", FakeHeaders().add(tokenHeader(authToken.token)).add(jsonContentTypeHeader), request)).get
       status(result) should equalTo(OK)
@@ -132,8 +104,6 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
     }
 
     "fail to create new media group due to lack of media group name" in new WithLangApplication(app) with FakeDataGen {
-      import dbProvider.driver.api._
-
       val name = generateText(20)
       val description = generateText(100)
       val request =
@@ -144,13 +114,9 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
           |}
         """.stripMargin
 
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken
-        )
-      ), Inf)
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken)
 
       val result = route(app, FakeRequest(POST, "/mediaGroups", FakeHeaders().add(tokenHeader(authToken.token)).add(jsonContentTypeHeader), request)).get
       status(result) should equalTo(BAD_REQUEST)
@@ -161,18 +127,10 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
   "DELETE /mediaGroups/:id" should {
 
     "delete existing media group" in new WithLangApplication(app) {
-      import dbProvider.driver.api._
-
-      val authToken = godRoleUserAuthToken
-      Await.result(dbProvider.db.run(
-        dbio.DBIO.seq(
-          userDao.Users += godRoleUser,
-          authTokenDao.AuthTokens += authToken,
-          mediaGroupDao.MediaGroups ++= Seq(
-            MediaGroup(Some(1), "Group 1", Some("description for group 1"), 1)
-          )
-        )
-      ), Inf)
+      lazy val authToken = godRoleUserAuthToken
+      override def initUsers = Seq(godRoleUser)
+      override def initAuthTokens = Seq(authToken)
+      override def initMediaGroups = Seq(MediaGroup(Some(1), "Group 1", Some("description for group 1"), 1))
 
       val result = route(app, FakeRequest(DELETE, "/mediaGroups/1", FakeHeaders().add(tokenHeader(authToken.token)), "")).get
       status(result) should equalTo(OK)

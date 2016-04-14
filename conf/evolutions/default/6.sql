@@ -20,7 +20,8 @@ CREATE TABLE "user" (
   password_hash    VARCHAR(255) NOT NULL,
   session_duration INTEGER      NOT NULL DEFAULT 30,
   status_id        INTEGER      NOT NULL REFERENCES user_status (id),
-  role_id          INTEGER      NOT NULL REFERENCES role (id)
+  role_id          INTEGER      NOT NULL REFERENCES role (id),
+  owner_user_id    BIGINT REFERENCES "user" (id)
 );
 COMMENT ON COLUMN "user".password_hash IS 'SHA256 encrypted password';
 COMMENT ON COLUMN "user".session_duration IS 'defines the maximum amount of minutes user session can last without being refreshed';
