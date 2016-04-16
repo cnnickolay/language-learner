@@ -19,7 +19,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
   "GET /auth" should {
     "refresh token timestamp" in new WithLangApplication(app) {
-      lazy val token = godRoleUserAuthToken
+      lazy val token = defaultAuthToken
       lazy val user = godRoleUser
       override def initUsers = Seq(user)
       override def initAuthTokens = Seq(token)
@@ -59,7 +59,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     }
 
     "successful authentication, existing token revoked due to expiration, new one granted" in new WithLangApplication(app) {
-      lazy val authToken = godRoleUserAuthToken.copy(expiresAt = presentTime.plusMinutes(20))
+      lazy val authToken = defaultAuthToken.copy(expiresAt = presentTime.plusMinutes(20))
       lazy val user = godRoleUser.copy(sessionDuration = 10)
       override def initUsers = Seq(user)
       override def initAuthTokens = Seq(authToken)
@@ -86,7 +86,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     }
 
     "successful authentication, reusing token" in new WithLangApplication(app) {
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken)
 
@@ -122,7 +122,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
 
   "DELETE /auth" should {
     "allow user to log out" in new WithLangApplication(app) {
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken)
 
@@ -133,7 +133,7 @@ class AuthenticationControllerSpec extends Specification with TestSupport with S
     }
 
     "do nothing if wrong token provided" in new WithLangApplication(app) {
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken.copy(active = false))
 

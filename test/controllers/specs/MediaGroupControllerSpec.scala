@@ -16,7 +16,7 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
   "GET /mediaGroups" should {
 
     "return all existing media groups" in new WithLangApplication(app) {
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken)
       override def initMediaGroups = Seq(
@@ -41,14 +41,13 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
           |  }
           |]
         """.stripMargin))
-
     }
   }
 
   "GET /mediaGroups/:id" should {
 
     "return one media group if it exists" in new WithLangApplication(app) {
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken)
       override def initMediaGroups = Seq(
@@ -69,7 +68,7 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
     }
 
     "return error if media group does not exist" in new WithLangApplication(app) {
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken)
 
@@ -94,7 +93,7 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
           |}
         """.stripMargin
 
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken)
 
@@ -114,7 +113,7 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
           |}
         """.stripMargin
 
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken)
 
@@ -127,7 +126,7 @@ class MediaGroupControllerSpec extends Specification with TestSupport with Scala
   "DELETE /mediaGroups/:id" should {
 
     "delete existing media group" in new WithLangApplication(app) {
-      lazy val authToken = godRoleUserAuthToken
+      lazy val authToken = defaultAuthToken
       override def initUsers = Seq(godRoleUser)
       override def initAuthTokens = Seq(authToken)
       override def initMediaGroups = Seq(MediaGroup(Some(1), "Group 1", Some("description for group 1"), 1))

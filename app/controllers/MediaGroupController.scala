@@ -26,8 +26,11 @@ class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
 
   def getAll = authActionWithCORS.async {
     mediaGroupDao.all().map { all =>
-      val array = all.foldLeft(Json.arr())((arr, mediaGroup) => arr.append(jsonFormatter writes(mediaGroup.name, mediaGroup.description, mediaGroup.languageId)))
-      Ok(array)
+      Ok {
+        all.foldLeft(Json.arr()) { (arr, mediaGroup) =>
+          arr.append(jsonFormatter writes(mediaGroup.name, mediaGroup.description, mediaGroup.languageId))
+        }
+      }
     }
   }
 

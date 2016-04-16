@@ -1,16 +1,14 @@
 package utils.actions
 
-import java.sql.Timestamp
-
 import com.google.inject.Inject
 import model.{AuthToken, AuthTokenDao, User, UserDao}
 import play.api.Logger
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc._
-import utils.{TimeService, TimeConversion}
+import utils.{TimeConversion, TimeService}
 
 import scala.concurrent.duration.Duration.Inf
 import scala.concurrent.{Await, Future}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class UserRequest[A](val user: Option[User] = None, val authToken: Option[AuthToken] = None, request: Request[A]) extends WrappedRequest[A](request)
 

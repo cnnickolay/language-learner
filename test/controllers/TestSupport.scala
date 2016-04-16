@@ -19,7 +19,7 @@ trait TestSupport extends TimeConversion {
   var authTokenIterator = authTokens.iterator
 
   val authTokenGenerator = new AuthTokenGenerator {
-    def nextAuthToken(): String = authTokenIterator.next()
+    def nextAuthToken: String = authTokenIterator.next()
   }
 
   /**
@@ -49,6 +49,7 @@ trait TestSupport extends TimeConversion {
   var englishLanguage = Language(Some(1), "english")
   var frenchLanguage = Language(Some(2), "french")
   var godRoleUser = User(Some(2), Some("a"), Some("b"), "niko", "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", ActiveEnum.id, 30, GodRoleEnum.id)
-  def godRoleUserAuthToken = AuthToken(authTokenGenerator.nextAuthToken(), presentTime, presentTime.plusMinutes(30), None, active = true, 2)
+  def defaultAuthToken = AuthToken(authTokenGenerator.nextAuthToken, presentTime, presentTime.plusMinutes(30), None, active = true, 2)
 
+  val SHA256_123 = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
 }

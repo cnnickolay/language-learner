@@ -36,7 +36,6 @@ CREATE TABLE auth_token (
 );
 COMMENT ON COLUMN auth_token.expired_at IS 'when token was marked as expired';
 
-
 INSERT INTO user_status (id, name) VALUES
   (1, 'active'),
   (2, 'cancelled'),

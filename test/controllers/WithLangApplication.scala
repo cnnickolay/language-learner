@@ -2,9 +2,10 @@ package controllers
 
 import model._
 import org.specs2.execute.{AsResult, Result}
+import org.specs2.specification.{Before, Around}
 import play.api.Application
-import play.api.db.DBApi
-import play.api.db.evolutions.Evolutions
+import play.api.db.{Database, DBApi}
+import play.api.db.evolutions.{Evolution, SimpleEvolutionsReader, Evolutions}
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.test.WithApplication
 import slick.dbio
@@ -29,13 +30,22 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
   lazy val subtitleDao = app.injector.instanceOf[SubtitleDao]
 
   def initUsers: Seq[User] = Seq()
+
   def initAuthTokens: Seq[AuthToken] = Seq()
+
   def initMediaGroups: Seq[MediaGroup] = Seq()
+
+  def sqlTestData: Seq[String] = Seq()
 
   override def around[T](t: => T)(implicit evidence$2: AsResult[T]): Result = {
     val databaseApi = app.injector.instanceOf[DBApi]
-    Evolutions.cleanupEvolutions(databaseApi.database("default"))
-    Evolutions.applyEvolutions(databaseApi.database("default"))
+    val database: Database = databaseApi.database("default")
+    Evolutions.cleanupEvolutions(database)
+    Evolutions.applyEvolutions(database)
+
+    sqlTestData.zipWithIndex.foreach { case (sql, idx) =>
+      Evolutions.applyEvolutions(database, SimpleEvolutionsReader.forDefault(Evolution(1000000 + idx, sql)))
+    }
 
     import dbProvider.driver.api._
 
@@ -55,5 +65,6 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
 
     super.around(t)
   }
+
 
 }

@@ -11,9 +11,10 @@ case class User(id: Option[Long] = None,
                 lastname: Option[String] = None,
                 login: String,
                 passwordHash: String,
-                statusId: Int,
-                sessionDuration: Int,
-                roleId: Int)
+                statusId: Int = ActiveEnum.id,
+                sessionDuration: Int = 30,
+                roleId: Int,
+                ownerUserId: Option[Long] = None)
 
 class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider,
                          val userStatusDao: StatusDao,
@@ -24,6 +25,7 @@ class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider,
   import roleDao.Roles
 
   def all: Future[Seq[User]] = db.run(Users.result)
+  def allUsersByOwner(ownerUserId: Long): Future[Seq[User]] = db.run(Users.filter(_.ownerUserId === ownerUserId).result)
   def byLoginAndPassword(login: String, passwordHash: String) = db.run {
     Users.filter(user => user.login === login && user.passwordHash === passwordHash).result.headOption
   }
@@ -40,11 +42,13 @@ class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider,
     def statusId = column[Int]("status_id")
     def sessionDuration = column[Int]("session_duration")
     def roleId = column[Int]("role_id")
+    def ownerUserId = column[Long]("owner_user_id")
 
     def status = foreignKey("user_status_id_fkey", statusId, Statuses)(_.id)
     def role = foreignKey("user_role_id_fkey", roleId, Roles)(_.id)
+    def ownerUser = foreignKey("owner_user_id_fkey", ownerUserId, Users)(_.id)
 
-    def * = (id.?, name.?, lastname.?, login, passwordHash, statusId, sessionDuration, roleId) <> (User.tupled, User.unapply)
+    def * = (id.?, name.?, lastname.?, login, passwordHash, statusId, sessionDuration, roleId, ownerUserId.?) <> (User.tupled, User.unapply)
   }
 
   val Users = TableQuery[UserTable]
