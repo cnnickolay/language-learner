@@ -13,13 +13,13 @@ class LanguageController @Inject()(val languageDao: LanguageDao,
                                    val userAction: UserAction,
                                    val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
 
-  def getAll = authActionWithCORS.async {
+  def getAll = authAction.async {
     for {
       languages <- languageDao.all()
     } yield Ok(Json.toJson(languages))
   }
 
-  def byId(id: Int) = authActionWithCORS.async {
+  def byId(id: Int) = authAction.async {
     for {
       language <- languageDao.byId(id)
     } yield {

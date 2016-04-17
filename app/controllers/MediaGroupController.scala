@@ -24,7 +24,7 @@ class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
     (__ \ "languageId").format[Int]
   ).tupled
 
-  def getAll = authActionWithCORS.async {
+  def getAll = authAction.async {
     mediaGroupDao.all().map { all =>
       Ok {
         all.foldLeft(Json.arr()) { (arr, mediaGroup) =>
@@ -34,14 +34,14 @@ class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
     }
   }
 
-  def byId(mediaGroupId: Long) = authActionWithCORS.async {
+  def byId(mediaGroupId: Long) = authAction.async {
     mediaGroupDao.byId(mediaGroupId).map {
       case Some(mediaGroup) => Ok(jsonFormatter writes (mediaGroup.name, mediaGroup.description, mediaGroup.languageId))
       case None => BadRequest(s"Media group with id $mediaGroupId does not exist")
     }
   }
 
-  def create = authActionWithCORS.async { request =>
+  def create = authAction.async { request =>
     Future {
       request.body.asJson.map { json =>
         jsonFormatter reads json match {
@@ -54,7 +54,7 @@ class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
     }
   }
 
-  def delete(mediaGroupId: Long) = authActionWithCORS.async {
+  def delete(mediaGroupId: Long) = authAction.async {
     for {
       _ <- mediaGroupDao.delete(mediaGroupId)
     } yield Ok(s"Media group $mediaGroupId has been deleted")

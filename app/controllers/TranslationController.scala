@@ -9,7 +9,7 @@ import utils.{TranslatorObjects, Translator}
 class TranslationController @Inject()(val userAction: UserAction,
                                       val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
 
-  def translate(from: String, to: String, word: String) = authActionWithCORS {
+  def translate(from: String, to: String, word: String) = authAction {
     val result = for {
       fromLanguage <- TranslatorObjects.Languages.find(_.name == from)
       toLanguage <- TranslatorObjects.Languages.find(_.name == to)

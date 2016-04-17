@@ -88,7 +88,7 @@ class AuthenticationController @Inject()(val userDao: UserDao,
 
   }
 
-  def revokeToken = authActionWithCORS.async { request =>
+  def revokeToken = authAction.async { request =>
     Future {
       request.authToken.map { authToken =>
         authTokenDao.revokeToken(authToken.token)
@@ -97,7 +97,7 @@ class AuthenticationController @Inject()(val userDao: UserDao,
     }
   }
 
-  def refreshToken = authActionWithCORS {
+  def refreshToken = authAction {
     Ok("Token refreshed")
   }
 

@@ -17,19 +17,19 @@ class SubtitleController @Inject()(val subtitleDao: SubtitleDao,
 
   import JsonConverters._
 
-  def getAll(mediaId: Long) = authActionWithCORS.async {
+  def getAll(mediaId: Long) = authAction.async {
     for {
       subtitles <- subtitleDao.all(mediaId)
     } yield Ok(Json.toJson(subtitles))
   }
 
-  def byId(subtitleId: Long) = authActionWithCORS.async {
+  def byId(subtitleId: Long) = authAction.async {
     for {
       subtitle <- subtitleDao.byId(subtitleId)
     } yield Ok(Json.toJson(subtitle))
   }
 
-  def update(subtitleId: Long) = authActionWithCORS.async { request =>
+  def update(subtitleId: Long) = authAction.async { request =>
     request.body.asJson.map(json =>
       json.validate[Subtitle] match {
         case JsSuccess(subtitle, _) =>
@@ -40,7 +40,7 @@ class SubtitleController @Inject()(val subtitleDao: SubtitleDao,
     ).getOrElse(Future(BadRequest("Unable to process request")))
   }
 
-  def create(mediaId: Long) = authActionWithCORS.async { request =>
+  def create(mediaId: Long) = authAction.async { request =>
     request.body.asJson.map { json =>
       json.validate[Subtitle] match {
         case JsSuccess(subtitle, _) =>
@@ -57,7 +57,7 @@ class SubtitleController @Inject()(val subtitleDao: SubtitleDao,
     }.getOrElse(Future(BadRequest("Unable to process request")))
   }
 
-  def delete(subtitleId: Long) = authActionWithCORS.async {
+  def delete(subtitleId: Long) = authAction.async {
     for {
       _ <- subtitleDao.delete(subtitleId)
     } yield Ok(s"Subtitle $subtitleId deleted")

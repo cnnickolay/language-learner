@@ -18,7 +18,7 @@ class UsersController @Inject()(val userDao: UserDao,
 
   implicit val userFormats = Json.format[UserJson]
 
-  def users = authActionWithCORS.async { request =>
+  def users = authAction.async { request =>
     val result: Option[Future[Result]] = request.user.flatMap(_.id) zip request.user.map(_.roleId) map { case (userId, role) =>
       role match {
         case GodRoleEnum.id =>

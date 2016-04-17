@@ -38,5 +38,10 @@ GET            /translations                            controllers.TranslationC
 
 GET            /users                                   controllers.UsersController.users
 
+GET            /course                                  controllers.CourseController.getAll
+POST           /course                                  controllers.CourseController.create
+PUT            /course/:courseId                        controllers.CourseController.update(courseId: Long)
+DELETE         /course/:courseId                        controllers.CourseController.delete(courseId: Long)
+
 # Map static resources from the /public folder to the /assets URL path
 GET            /assets/*file                            controllers.Assets.versioned(path="/public", file: Asset)
