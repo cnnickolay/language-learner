@@ -56,7 +56,7 @@ trait TestSupport extends TimeConversion {
   val SHA256_123 = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
 
 
-  def insertUser(userId: Long, authToken: String, role: RoleEnum, login: String) = Seq(
+  def insertUserWithAuthToken(userId: Long, authToken: String, role: RoleEnum, login: String) = Seq(
     s"""INSERT INTO "user" (id, name, lastname, login, password_hash, status_id, session_duration, role_id, owner_user_id) VALUES
           ($userId, '$login', NULL, '$login', '$SHA256_123', ${ActiveEnum.id}, 1440, ${role.id}, NULL);
         """,
@@ -64,5 +64,10 @@ trait TestSupport extends TimeConversion {
            ('$authToken', '$presentTime', '${presentTime.plusMinutes(20)}', true, $userId);
         """
   )
+
+  def insertCourse(id: Long, courseName: String, targetLanguageId: Int, presentingLanguageId: Int) =
+    s"""INSERT INTO course(id, name, target_language_id, presenting_language_id) VALUES
+      |($id, '$courseName', $targetLanguageId, $presentingLanguageId);
+    """.stripMargin
 
 }

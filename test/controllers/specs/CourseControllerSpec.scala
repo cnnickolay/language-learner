@@ -6,13 +6,9 @@ import org.junit.runner._
 import org.scalatest.concurrent.ScalaFutures
 import org.specs2.mutable._
 import org.specs2.runner._
+import play.api.libs.json.Json
+import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
-import play.api.test._
-import play.libs.Json
-import slick.dbio
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration.Inf
 
 @RunWith(classOf[JUnitRunner])
 class CourseControllerSpec extends Specification with TestSupport with ScalaFutures {
@@ -21,17 +17,39 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
   lazy val teacherAuthToken = authTokenGenerator.nextAuthToken
   lazy val studentAuthToken = authTokenGenerator.nextAuthToken
 
-  val insertAdminUser = insertUser(100, adminAuthToken, AdminRoleEnum, "admin")
-  val insertTeacherUser = insertUser(200, teacherAuthToken, TeacherRoleEnum, "teacher")
-  val insertStudentUser = insertUser(300, studentAuthToken, StudentRoleEnum, "student")
+  lazy val insertAdminUser = insertUserWithAuthToken(100, adminAuthToken, AdminRoleEnum, "admin")
+  lazy val insertTeacherUser = insertUserWithAuthToken(200, teacherAuthToken, TeacherRoleEnum, "teacher")
+  lazy val insertStudentUser = insertUserWithAuthToken(300, studentAuthToken, StudentRoleEnum, "student")
 
   "GET /course" should {
 
     "return all courses if user is ADMIN" in new WithLangApplication(app) {
-      override def sqlTestData: Seq[String] = insertAdminUser
+      override def sqlTestData: Seq[String] =
+        insertAdminUser :+
+        insertCourse(1, "course1", FrenchLanguageEnum.id, EnglishLanguageEnum.id) :+
+        insertCourse(2, "course2", EnglishLanguageEnum.id, GermanLanguageEnum.id)
 
       val result = route(app, FakeRequest(GET, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)), "")).get
       status(result) must equalTo(OK)
+      contentType(result) must beSome.which(_ == "application/json")
+      contentAsJson(result) should equalTo(Json.parse(
+        s"""
+           |[
+           |  {
+           |    "id": 1,
+           |    "name": "course1",
+           |    "targetLanguage": "french",
+           |    "presentingLanguage": "english"
+           |  },
+           |  {
+           |    "id": 2,
+           |    "name": "course2",
+           |    "targetLanguage": "english",
+           |    "presentingLanguage": "german"
+           |  }
+           |]
+        """.stripMargin))
+
     }
 
     "return 401 if user not authenticated" in new WithLangApplication(app) {
