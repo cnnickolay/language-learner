@@ -13,10 +13,12 @@ import play.api.test.Helpers._
 @RunWith(classOf[JUnitRunner])
 class CourseControllerSpec extends Specification with TestSupport with ScalaFutures {
 
+  lazy val godAuthToken = authTokenGenerator.nextAuthToken
   lazy val adminAuthToken = authTokenGenerator.nextAuthToken
   lazy val teacherAuthToken = authTokenGenerator.nextAuthToken
   lazy val studentAuthToken = authTokenGenerator.nextAuthToken
 
+  lazy val insertGodUser = insertUserWithAuthToken(999, godAuthToken, GodRoleEnum, "_god")
   lazy val insertAdminUser = insertUserWithAuthToken(100, adminAuthToken, AdminRoleEnum, "admin")
   lazy val insertTeacherUser = insertUserWithAuthToken(200, teacherAuthToken, TeacherRoleEnum, "teacher")
   lazy val insertStudentUser = insertUserWithAuthToken(300, studentAuthToken, StudentRoleEnum, "student")
@@ -109,11 +111,39 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
   }
 
   "DELETE /course/:id" should {
-    "delete existing course entry if user is ADMIN and course exists" in new WithLangApplication(app) { failure }
+    "delete existing course entry if user is ADMIN and course exists" in new WithLangApplication(app) {
+      override def sqlTestData: Seq[String] =
+        insertGodUser :+
+          insertCourse(1, "course1", FrenchLanguageEnum.id, EnglishLanguageEnum.id) :+
+          insertCourse(2, "course2", EnglishLanguageEnum.id, GermanLanguageEnum.id)
 
-    "delete existing course entry if user is GOD and course exists" in new WithLangApplication(app) { failure }
+      whenReady(courseDao.byId(1)) {
+        _ must not equalTo None
+      }
 
-    "return 400 if course with given id does not exist" in new WithLangApplication(app) { failure }
+      val result = route(app, FakeRequest(DELETE, "/course/1", FakeHeaders().add(tokenHeader(adminAuthToken)), "")).get
+      status(result) must equalTo(OK)
+      whenReady(courseDao.byId(1)) {
+        _ must equalTo(None)
+      }
+    }
+
+    "delete existing course entry if user is GOD and course exists" in new WithLangApplication(app) {
+      override def sqlTestData: Seq[String] =
+        insertGodUser :+
+        insertCourse(1, "course1", FrenchLanguageEnum.id, EnglishLanguageEnum.id) :+
+        insertCourse(2, "course2", EnglishLanguageEnum.id, GermanLanguageEnum.id)
+
+      whenReady(courseDao.byId(1)) {
+        _ must not equalTo None
+      }
+
+      val result = route(app, FakeRequest(DELETE, "/course/1", FakeHeaders().add(tokenHeader(godAuthToken)), "")).get
+      status(result) must equalTo(OK)
+      whenReady(courseDao.byId(1)) {
+        _ must equalTo(None)
+      }
+    }
 
     "return 401 if user not authenticated" in new WithLangApplication(app) {
       val result = route(app, FakeRequest(GET, "/course", FakeHeaders(), "")).get

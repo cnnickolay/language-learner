@@ -28,6 +28,7 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
   lazy val roleDao = app.injector.instanceOf[RoleDao]
   lazy val statusDao = app.injector.instanceOf[StatusDao]
   lazy val subtitleDao = app.injector.instanceOf[SubtitleDao]
+  lazy val courseDao = app.injector.instanceOf[CourseDao]
 
   def initUsers: Seq[User] = Seq()
 

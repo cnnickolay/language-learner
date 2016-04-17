@@ -41,8 +41,8 @@ class CourseController @Inject()(val languageDao: LanguageDao,
     Future(Ok)
   }
 
-  def delete(courseId: Long) = adminAction.async { request =>
-    Future(Ok)
+  def delete(courseId: Long) = adminAndGodAction.async {
+    courseDao.delete(courseId).map(_ => Ok)
   }
 
 }
