@@ -31,7 +31,9 @@ trait FakeDataGen {
     "They were strange shoulders, still powerful although very old, and the neck was still strong too and the creases did not show so much when the old man was asleep and his head fallen forward."
   )
   
-  def generateName = s"${names(Random.nextInt(names.length))} ${lastnames(Random.nextInt(lastnames.length))}"
+  def generateFullName = s"${names(Random.nextInt(names.length))} ${lastnames(Random.nextInt(lastnames.length))}"
+
+  def generateName = s"${names(Random.nextInt(names.length))}"
 
   def generateText(maxCharacters: Integer) = {
     val shuffledText = Random.shuffle(text): List[String]

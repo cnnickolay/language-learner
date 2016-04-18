@@ -15,6 +15,7 @@ class CourseDao @Inject() (val dbConfigProvider: DatabaseConfigProvider, val lan
 
   def all(): Future[Seq[Course]] = db.run(Courses.result)
   def byId(id: Long): Future[Option[Course]] = db.run(Courses.filter(_.id === id).result.headOption)
+  def byName(name: String): Future[Option[Course]] = db.run(Courses.filter(_.name === name).result.headOption)
   def insert(course: Course) = db.run(Courses += course)
   def delete(id: Long) = db.run(Courses.filter(_.id === id).delete)
   def update(id: Long, course: Course) = db.run(Courses.filter(_.id === id).update(course))

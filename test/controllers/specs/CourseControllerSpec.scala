@@ -1,6 +1,6 @@
 package controllers.specs
 
-import controllers.{TestSupport, WithLangApplication}
+import controllers.{FakeDataGen, TestSupport, WithLangApplication}
 import model._
 import org.junit.runner._
 import org.scalatest.concurrent.ScalaFutures
@@ -11,17 +11,17 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
 
 @RunWith(classOf[JUnitRunner])
-class CourseControllerSpec extends Specification with TestSupport with ScalaFutures {
+class CourseControllerSpec extends Specification with TestSupport with ScalaFutures with FakeDataGen {
 
-  lazy val godAuthToken = authTokenGenerator.nextAuthToken
-  lazy val adminAuthToken = authTokenGenerator.nextAuthToken
-  lazy val teacherAuthToken = authTokenGenerator.nextAuthToken
-  lazy val studentAuthToken = authTokenGenerator.nextAuthToken
+  val godAuthToken = authTokenGenerator.nextAuthToken
+  val adminAuthToken = authTokenGenerator.nextAuthToken
+  val teacherAuthToken = authTokenGenerator.nextAuthToken
+  val studentAuthToken = authTokenGenerator.nextAuthToken
 
-  lazy val insertGodUser = insertUserWithAuthToken(999, godAuthToken, GodRoleEnum, "_god")
-  lazy val insertAdminUser = insertUserWithAuthToken(100, adminAuthToken, AdminRoleEnum, "admin")
-  lazy val insertTeacherUser = insertUserWithAuthToken(200, teacherAuthToken, TeacherRoleEnum, "teacher")
-  lazy val insertStudentUser = insertUserWithAuthToken(300, studentAuthToken, StudentRoleEnum, "student")
+  val insertGodUser = insertUserWithAuthToken(999, godAuthToken, GodRoleEnum, "_god")
+  val insertAdminUser = insertUserWithAuthToken(100, adminAuthToken, AdminRoleEnum, "admin")
+  val insertTeacherUser = insertUserWithAuthToken(200, teacherAuthToken, TeacherRoleEnum, "teacher")
+  val insertStudentUser = insertUserWithAuthToken(300, studentAuthToken, StudentRoleEnum, "student")
 
   "GET /course" should {
 
@@ -61,11 +61,78 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
   }
 
   "POST /course" should {
-    "create new course entry if user is ADMIN" in new WithLangApplication(app) { failure }
+    "create new course entry if user is ADMIN" in new WithLangApplication(app) {
+      lazy val courseName: String = s"${generateName}Course"
+      val request =
+        s"""
+          |{
+          |  "name": "$courseName",
+          |  "targetLanguage": "english",
+          |  "presentingLanguage": "french"
+          |}
+        """.stripMargin
 
-    "create new course entry if user is GOD" in new WithLangApplication(app) { failure }
+      override def sqlTestData: Seq[String] = insertAdminUser
 
-    "return 400 if course with given name already exists" in new WithLangApplication(app) { failure }
+      whenReady(courseDao.byName(courseName)) {
+        _ must equalTo(None)
+      }
+
+      val result = route(app, FakeRequest(POST, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
+      status(result) must equalTo(OK)
+      whenReady(courseDao.byName(courseName)) {
+        case Some(course) =>
+          course.name must equalTo(courseName)
+          course.targetLanguageId must equalTo(EnglishLanguageEnum.id)
+          course.presentingLanguageId must equalTo(FrenchLanguageEnum.id)
+        case _ => failure("course object not found")
+      }
+    }
+
+    "fail to create new course entry if target language provided is wrong" in new WithLangApplication(app) {
+      lazy val courseName: String = s"${generateName}Course"
+      val request =
+        s"""
+          |{
+          |  "name": "$courseName",
+          |  "targetLanguage": "blablabla",
+          |  "presentingLanguage": "french"
+          |}
+        """.stripMargin
+
+      override def sqlTestData: Seq[String] = insertAdminUser
+
+      whenReady(courseDao.byName(courseName)) {
+        _ must equalTo(None)
+      }
+
+      val result = route(app, FakeRequest(POST, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
+      status(result) must equalTo(BAD_REQUEST)
+      whenReady(courseDao.byName(courseName)) {
+        _ must equalTo(None)
+      }
+    }
+
+    "return 400 if course with given name already exists" in new WithLangApplication(app) {
+      lazy val courseName: String = s"${generateName}Course"
+      val request =
+        s"""
+           |{
+           |  "name": "$courseName",
+           |  "targetLanguage": "english",
+           |  "presentingLanguage": "french"
+           |}
+        """.stripMargin
+
+      override def sqlTestData: Seq[String] = insertAdminUser :+ insertCourse(1, s"$courseName", EnglishLanguageEnum.id, FrenchLanguageEnum.id)
+
+      whenReady(courseDao.byName(courseName)) {
+        _ must not equalTo None
+      }
+
+      val result = route(app, FakeRequest(POST, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
+      status(result) must equalTo(BAD_REQUEST)
+    }
 
     "return 401 if user not authenticated" in new WithLangApplication(app) {
       val result = route(app, FakeRequest(GET, "/course", FakeHeaders(), "")).get
@@ -86,11 +153,70 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
   }
 
   "PUT /course/:id" should {
-    "update existing course entry if user is ADMIN" in new WithLangApplication(app) { failure }
+    "update existing course entry if user is ADMIN" in new WithLangApplication(app) {
+      lazy val courseName: String = "oldCourse"
+      lazy val newCourseName: String = "newCourse"
+      val request =
+        s"""
+           |{
+           |  "name": "$newCourseName",
+           |  "targetLanguage": "english",
+           |  "presentingLanguage": "french"
+           |}
+        """.stripMargin
 
-    "update existing course entry if user is GOD" in new WithLangApplication(app) { failure }
+      override def sqlTestData: Seq[String] = insertAdminUser :+ insertCourse(1, courseName, FrenchLanguageEnum.id, GermanLanguageEnum.id)
 
-    "return 400 if course with given name already exists" in new WithLangApplication(app) { failure }
+      whenReady(courseDao.byName(courseName)) {
+        case Some(course) =>
+          course.targetLanguageId must equalTo(FrenchLanguageEnum.id)
+          course.presentingLanguageId must equalTo(GermanLanguageEnum.id)
+        case _ => failure(s"course object $courseName not found")
+      }
+      whenReady(courseDao.byName(newCourseName)) {
+        _ must equalTo(None)
+      }
+
+      val result = route(app, FakeRequest(PUT, "/course/1", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
+      status(result) must equalTo(OK)
+      whenReady(courseDao.byName(newCourseName)) {
+        case Some(course) =>
+          course.targetLanguageId must equalTo(EnglishLanguageEnum.id)
+          course.presentingLanguageId must equalTo(FrenchLanguageEnum.id)
+        case _ => failure(s"course object $newCourseName not found")
+      }
+      whenReady(courseDao.byName(courseName)) {
+        _ must equalTo(None)
+      }
+    }
+
+    "return 400 if course with given name already exists" in new WithLangApplication(app) {
+      lazy val courseName: String = "oldCourse"
+      lazy val newCourseName: String = "newCourse"
+      val request =
+        s"""
+           |{
+           |  "name": "$newCourseName",
+           |  "targetLanguage": "english",
+           |  "presentingLanguage": "french"
+           |}
+        """.stripMargin
+
+      override def sqlTestData: Seq[String] = insertAdminUser :+ insertCourse(1, courseName, FrenchLanguageEnum.id, GermanLanguageEnum.id)
+
+      whenReady(courseDao.byName(courseName)) {
+        case Some(course) =>
+          course.targetLanguageId must equalTo(FrenchLanguageEnum.id)
+          course.presentingLanguageId must equalTo(GermanLanguageEnum.id)
+        case _ => failure(s"course object $courseName not found")
+      }
+      whenReady(courseDao.byName(newCourseName)) {
+        _ must equalTo(None)
+      }
+
+      val result = route(app, FakeRequest(PUT, "/course/1", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
+      status(result) must equalTo(OK)
+    }
 
     "return 401 if user not authenticated" in new WithLangApplication(app) {
       val result = route(app, FakeRequest(GET, "/course", FakeHeaders(), "")).get
@@ -121,7 +247,7 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
         _ must not equalTo None
       }
 
-      val result = route(app, FakeRequest(DELETE, "/course/1", FakeHeaders().add(tokenHeader(adminAuthToken)), "")).get
+      val result = route(app, FakeRequest(DELETE, "/course/1", FakeHeaders().add(tokenHeader(godAuthToken)), "")).get
       status(result) must equalTo(OK)
       whenReady(courseDao.byId(1)) {
         _ must equalTo(None)

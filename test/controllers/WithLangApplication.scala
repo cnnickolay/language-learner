@@ -41,11 +41,14 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
   override def around[T](t: => T)(implicit evidence$2: AsResult[T]): Result = {
     val databaseApi = app.injector.instanceOf[DBApi]
     val database: Database = databaseApi.database("default")
-    Evolutions.cleanupEvolutions(database)
+
+    database.getConnection().prepareStatement("drop schema public cascade;").execute()
+    database.getConnection().prepareStatement("create schema public;").execute()
+
     Evolutions.applyEvolutions(database)
 
-    sqlTestData.zipWithIndex.foreach { case (sql, idx) =>
-      Evolutions.applyEvolutions(database, SimpleEvolutionsReader.forDefault(Evolution(1000000 + idx, sql)))
+    sqlTestData.foreach { sql =>
+      database.getConnection().prepareStatement(sql).execute()
     }
 
     import dbProvider.driver.api._

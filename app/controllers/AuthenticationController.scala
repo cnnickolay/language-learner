@@ -15,8 +15,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-
-
 class AuthenticationController @Inject()(val userDao: UserDao,
                                          val authTokenDao: AuthTokenDao,
                                          val userAction: UserAction,
