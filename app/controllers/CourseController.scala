@@ -19,35 +19,31 @@ class CourseController @Inject()(val languageDao: LanguageDao,
   implicit val courseJsonFormatter = Json.format[CourseJson]
 
   def getAll = authAction.async {
-    languageDao.all()
-      .flatMap { languages =>
-        courseDao.all().map { courses =>
-          courses.map { course =>
-            val targetLanguage = languages.find(_.id.getOrElse(-1) == course.targetLanguageId).map(_.name).getOrElse("")
-            val presentingLanguage = languages.find(_.id.getOrElse(-1) == course.presentingLanguageId).map(_.name).getOrElse("")
-            CourseJson(course.id, course.name, targetLanguage, presentingLanguage)
-          }
-        }
-      }.map { courseJsonSeq =>
-        Ok(Json.toJson(courseJsonSeq))
-      }
+    val result = for {
+      languages <- languageDao.all()
+      courses <- courseDao.all()
+    } yield courses.map { course =>
+      val targetLanguage = languages.find(_.id.getOrElse(-1) == course.targetLanguageId).map(_.name).getOrElse("")
+      val presentingLanguage = languages.find(_.id.getOrElse(-1) == course.presentingLanguageId).map(_.name).getOrElse("")
+      CourseJson(course.id, course.name, targetLanguage, presentingLanguage)
+    }
+
+    result.map { courseJsonSeq =>
+      Ok(Json.toJson(courseJsonSeq))
+    }
   }
 
   def create = adminAction.async { request =>
-    def saveCourse(course: CourseJson): Option[Future[Status]] = {
-      languageByName(course.targetLanguage) zip languageByName(course.presentingLanguage) map {
-        case (targetLanguage, presentingLanguage) =>
-          courseDao.byName(course.name).flatMap {
-            case None => courseDao.insert(Course(None, course.name, targetLanguage.id, presentingLanguage.id)) map { _ => Ok }
-            case _ => Future(BadRequest)
-          }
-
-      } headOption
-    }
-
     request.body.asJson.flatMap { json =>
       json.validate[CourseJson] match {
-        case JsSuccess(course, _) => saveCourse(course)
+        case JsSuccess(course, _) =>
+          for {
+            targetLanguage <- languageByName(course.targetLanguage)
+            presentingLanguage <- languageByName(course.presentingLanguage)
+          } yield courseDao.byName(course.name).map {
+            case None => courseDao.insert(Course(None, course.name, targetLanguage.id, presentingLanguage.id)); Ok
+            case _ => BadRequest
+          }
         case JsError(_) => Some(Future(BadRequest("Wrong json format")))
       }
     }.getOrElse(Future(BadRequest("Wrong payload, expected json")))
@@ -57,16 +53,19 @@ class CourseController @Inject()(val languageDao: LanguageDao,
     def processJsonRequest(json: JsValue): Future[Result] = {
       json.validate[CourseJson] match {
         case JsSuccess(newCourseJson, _) =>
-          languageByName(newCourseJson.targetLanguage) zip languageByName(newCourseJson.presentingLanguage) map {
-            case (targetLanguage, presentingLanguage) =>
-              courseDao.byId(courseId)
-                .flatMap {
-                  case Some(existingCourse) =>
-                    val newCourse = new Course(Some(courseId), newCourseJson.name, targetLanguage.id, presentingLanguage.id)
-                    courseDao.update(courseId, newCourse).map(_ => Ok)
-                  case _ => Future(BadRequest(s"No course with id $courseId found"))
-                }
-          } headOption match {
+          val result = for {
+            targetLanguage <- languageByName(newCourseJson.targetLanguage)
+            presentingLanguage <- languageByName(newCourseJson.presentingLanguage)
+          } yield for {
+            Some(course) <- courseDao.byId(courseId)
+            existingCourse <- courseDao.byName(newCourseJson.name)
+          } yield existingCourse match {
+            case None =>
+              courseDao.update(courseId, new Course(Some(courseId), newCourseJson.name, targetLanguage.id, presentingLanguage.id))
+              Ok(s"Course $courseId was updated")
+            case _ => BadRequest("Course with this name already exists")
+          }
+          result match {
             case None => Future(BadRequest("Languages provided are wrong"))
             case Some(res) => res
           }
@@ -80,7 +79,8 @@ class CourseController @Inject()(val languageDao: LanguageDao,
   }
 
   def delete(courseId: Long) = adminAndGodAction.async {
-    courseDao.delete(courseId).map(_ => Ok)
+    courseDao.delete(courseId)
+    Future(Ok)
   }
 
 }

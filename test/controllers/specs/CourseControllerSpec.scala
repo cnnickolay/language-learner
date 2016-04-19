@@ -179,6 +179,8 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
 
       val result = route(app, FakeRequest(PUT, "/course/1", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
       status(result) must equalTo(OK)
+      contentAsString(result) must equalTo("Course 1 was updated")
+
       whenReady(courseDao.byName(newCourseName)) {
         case Some(course) =>
           course.targetLanguageId must equalTo(EnglishLanguageEnum.id)
@@ -191,31 +193,38 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
     }
 
     "return 400 if course with given name already exists" in new WithLangApplication(app) {
-      lazy val courseName: String = "oldCourse"
-      lazy val newCourseName: String = "newCourse"
+      lazy val firstCourseName: String = "oldCourse"
+      lazy val secondCourseName: String = "newCourse"
       val request =
         s"""
            |{
-           |  "name": "$newCourseName",
+           |  "name": "$firstCourseName",
            |  "targetLanguage": "english",
            |  "presentingLanguage": "french"
            |}
         """.stripMargin
 
-      override def sqlTestData: Seq[String] = insertAdminUser :+ insertCourse(1, courseName, FrenchLanguageEnum.id, GermanLanguageEnum.id)
+      override def sqlTestData: Seq[String] =
+        insertAdminUser :+
+          insertCourse(1, firstCourseName, FrenchLanguageEnum.id, GermanLanguageEnum.id) :+
+          insertCourse(2, secondCourseName, FrenchLanguageEnum.id, GermanLanguageEnum.id)
 
-      whenReady(courseDao.byName(courseName)) {
+      whenReady(courseDao.byName(firstCourseName)) {
         case Some(course) =>
           course.targetLanguageId must equalTo(FrenchLanguageEnum.id)
           course.presentingLanguageId must equalTo(GermanLanguageEnum.id)
-        case _ => failure(s"course object $courseName not found")
+        case _ => failure(s"course object $firstCourseName not found")
       }
-      whenReady(courseDao.byName(newCourseName)) {
-        _ must equalTo(None)
+      whenReady(courseDao.byName(secondCourseName)) {
+        case Some(course) =>
+          course.targetLanguageId must equalTo(FrenchLanguageEnum.id)
+          course.presentingLanguageId must equalTo(GermanLanguageEnum.id)
+        case _ => failure(s"course object $firstCourseName not found")
       }
 
-      val result = route(app, FakeRequest(PUT, "/course/1", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
-      status(result) must equalTo(OK)
+      val result = route(app, FakeRequest(PUT, "/course/2", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
+      contentAsString(result) must equalTo("Course with this name already exists")
+      status(result) must equalTo(BAD_REQUEST)
     }
 
     "return 401 if user not authenticated" in new WithLangApplication(app) {
@@ -257,8 +266,8 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
     "delete existing course entry if user is GOD and course exists" in new WithLangApplication(app) {
       override def sqlTestData: Seq[String] =
         insertGodUser :+
-        insertCourse(1, "course1", FrenchLanguageEnum.id, EnglishLanguageEnum.id) :+
-        insertCourse(2, "course2", EnglishLanguageEnum.id, GermanLanguageEnum.id)
+          insertCourse(1, "course1", FrenchLanguageEnum.id, EnglishLanguageEnum.id) :+
+          insertCourse(2, "course2", EnglishLanguageEnum.id, GermanLanguageEnum.id)
 
       whenReady(courseDao.byId(1)) {
         _ must not equalTo None
