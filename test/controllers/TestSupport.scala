@@ -48,8 +48,8 @@ trait TestSupport extends TimeConversion {
   }
 
   // fake data
-  var englishLanguage = Language(Some(1), "english")
-  var frenchLanguage = Language(Some(2), "french")
+  var englishLanguage = Language(1, "english")
+  var frenchLanguage = Language(2, "french")
   var godRoleUser = User(Some(2), Some("a"), Some("b"), "niko", "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", ActiveEnum.id, 30, GodRoleEnum.id)
   def defaultAuthToken = AuthToken(authTokenGenerator.nextAuthToken, presentTime, presentTime.plusMinutes(30), None, active = true, 2)
 

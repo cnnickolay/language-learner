@@ -24,7 +24,7 @@ object JsonConverters {
   )(Subtitle.apply, unlift(Subtitle.unapply))
 
   implicit val languageFormat: Format[Language] = (
-    (__ \ "id").formatNullable[Int] and
+    (__ \ "id").format[Int] and
     (__ \ "name").format[String]
   )(Language.apply, unlift(Language.unapply))
 

@@ -6,7 +6,7 @@ import slick.driver.JdbcProfile
 
 import scala.concurrent.Future
 
-case class Language(id: Option[Int], name: String)
+case class Language(id: Int, name: String)
 
 class LanguageDao @Inject()(val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
   import driver.api._
@@ -17,7 +17,7 @@ class LanguageDao @Inject()(val dbConfigProvider: DatabaseConfigProvider) extend
   class LanguageTable(tag: Tag) extends Table[Language](tag, "language") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
-    def * = (id.?, name) <>(Language.tupled, Language.unapply)
+    def * = (id, name) <>(Language.tupled, Language.unapply)
   }
 
   val Languages = TableQuery[LanguageTable]

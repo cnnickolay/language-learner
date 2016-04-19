@@ -23,8 +23,8 @@ class CourseController @Inject()(val languageDao: LanguageDao,
       languages <- languageDao.all()
       courses <- courseDao.all()
     } yield courses.map { course =>
-      val targetLanguage = languages.find(_.id.getOrElse(-1) == course.targetLanguageId).map(_.name).getOrElse("")
-      val presentingLanguage = languages.find(_.id.getOrElse(-1) == course.presentingLanguageId).map(_.name).getOrElse("")
+      val targetLanguage = languages.find(_.id == course.targetLanguageId).map(_.name).getOrElse("")
+      val presentingLanguage = languages.find(_.id == course.presentingLanguageId).map(_.name).getOrElse("")
       CourseJson(course.id, course.name, targetLanguage, presentingLanguage)
     }
 
