@@ -34,18 +34,20 @@ class CourseController @Inject()(val languageDao: LanguageDao,
   }
 
   def create = adminAction.async { request =>
-    request.body.asJson.flatMap { json =>
-      json.validate[CourseJson] match {
-        case JsSuccess(course, _) =>
-          for {
-            targetLanguage <- languageByName(course.targetLanguage)
-            presentingLanguage <- languageByName(course.presentingLanguage)
-          } yield courseDao.byName(course.name).map {
-            case None => courseDao.insert(Course(None, course.name, targetLanguage.id, presentingLanguage.id)); Ok
-            case _ => BadRequest
-          }
-        case JsError(_) => Some(Future(BadRequest("Wrong json format")))
-      }
+    request.body.asJson.map { json =>
+      json.validate[CourseJson].map { course =>
+        val result = for {
+          targetLanguage <- languageByName(course.targetLanguage)
+          presentingLanguage <- languageByName(course.presentingLanguage)
+        } yield courseDao.byName(course.name).map {
+          case None => courseDao.insert(Course(None, course.name, targetLanguage.id, presentingLanguage.id)); Ok(s"Course ${course.name} successfully added")
+          case _ => BadRequest(s"Course named ${course.name} already exists")
+        }
+        result match {
+          case None => Future(BadRequest("Language provided can not be identified"))
+          case Some(future) => future
+        }
+      }.getOrElse(Future(BadRequest("Wrong json format")))
     }.getOrElse(Future(BadRequest("Wrong payload, expected json")))
   }
 

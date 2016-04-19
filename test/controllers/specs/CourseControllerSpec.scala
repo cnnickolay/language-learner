@@ -80,6 +80,7 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
 
       val result = route(app, FakeRequest(POST, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
       status(result) must equalTo(OK)
+      contentAsString(result) must equalTo(s"Course $courseName successfully added")
       whenReady(courseDao.byName(courseName)) {
         case Some(course) =>
           course.name must equalTo(courseName)
@@ -108,13 +109,14 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
 
       val result = route(app, FakeRequest(POST, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
       status(result) must equalTo(BAD_REQUEST)
+      contentAsString(result) must equalTo("Language provided can not be identified")
       whenReady(courseDao.byName(courseName)) {
         _ must equalTo(None)
       }
     }
 
     "return 400 if course with given name already exists" in new WithLangApplication(app) {
-      lazy val courseName: String = s"${generateName}Course"
+      lazy val courseName = s"${generateName}Course"
       val request =
         s"""
            |{
@@ -132,6 +134,22 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
 
       val result = route(app, FakeRequest(POST, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
       status(result) must equalTo(BAD_REQUEST)
+      contentAsString(result) must equalTo(s"Course named $courseName already exists")
+    }
+
+    "return 400 if wrong json format given" in new WithLangApplication(app) {
+      val request =
+        s"""
+           |{
+           |  "totallyWrongFormat": "blablabla"
+           |}
+        """.stripMargin
+
+      override def sqlTestData: Seq[String] = insertAdminUser
+
+      val result = route(app, FakeRequest(POST, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)).add(jsonContentTypeHeader), request)).get
+      status(result) must equalTo(BAD_REQUEST)
+      contentAsString(result) must equalTo("Wrong json format")
     }
 
     "return 401 if user not authenticated" in new WithLangApplication(app) {
