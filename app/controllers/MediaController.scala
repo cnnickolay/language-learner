@@ -35,11 +35,10 @@ class MediaController @Inject()(val mediaDao: MediaDao,
 
   def create = authAction.async { (request: Request[AnyContent]) =>
     request.body.asJson.map { (json: JsValue) =>
-      json.validate[Media] match {
-        case JsSuccess(media: Media, _) => mediaDao.insert(media); Future{Ok("inserted media item")}
-        case JsError(e) => Future{ BadRequest(s"Bad payload: $e") }
-      }
-    }.getOrElse(Future{BadRequest("Unable to parse payload")})
+      json.validate[Media].map { media =>
+        mediaDao.insert(media) map(_ => Ok("inserted media item"))
+      } getOrElse Future(BadRequest(s"Bad payload"))
+    }.getOrElse(Future(BadRequest("Unable to parse payload")))
   }
 
   def delete(mediaId: Long) = authAction.async {

@@ -13,20 +13,20 @@ import play.api.test.Helpers._
 @RunWith(classOf[JUnitRunner])
 class UserControllerSpec extends Specification with TestSupport with ScalaFutures {
 
-  "GET /users" should {
-    lazy val teacherAuthToken = authTokenGenerator.nextAuthToken
-    lazy val otherTeacherAuthToken = authTokenGenerator.nextAuthToken
-    lazy val godAuthToken = authTokenGenerator.nextAuthToken
+  val teacherAuthToken = authTokenGenerator.nextAuthToken
+  val otherTeacherAuthToken = authTokenGenerator.nextAuthToken
+  val godAuthToken = authTokenGenerator.nextAuthToken
 
+  "GET /users" should {
     val defaultData = Seq(
       s"""INSERT INTO "user" (id, name, lastname, login, password_hash, status_id, session_duration, role_id, owner_user_id) VALUES
-          (100, 'teacher', NULL, 'teacher', '$SHA256_123', ${ActiveEnum.id}, 1440, ${TeacherRoleEnum.id}, NULL),
-          (101, 'student1', NULL, 'student1', '$SHA256_123', ${ActiveEnum.id}, 1440, ${StudentRoleEnum.id}, 100),
-          (102, 'student2', NULL, 'student2', '$SHA256_123', ${ActiveEnum.id}, 1440, ${StudentRoleEnum.id}, 100),
-          (200, 'otherteacher', NULL, 'otherteacher', '$SHA256_123', ${ActiveEnum.id}, 1440, ${TeacherRoleEnum.id}, NULL),
-          (201, 'otherstudent1', NULL, 'otherstudent1', '$SHA256_123', ${ActiveEnum.id}, 1440, ${StudentRoleEnum.id}, 200),
-          (202, 'otherstudent2', NULL, 'otherstudent2', '$SHA256_123', ${ActiveEnum.id}, 1440, ${StudentRoleEnum.id}, 200),
-          (300, '_god', NULL, '_god', '$SHA256_123', ${ActiveEnum.id}, 1440, ${GodRoleEnum.id}, NULL);
+          (100, NULL, NULL, 'teacher', '$SHA256_123', ${ActiveEnum.id}, 1440, ${TeacherRoleEnum.id}, NULL),
+          (101, NULL, NULL, 'student1', '$SHA256_123', ${ActiveEnum.id}, 1440, ${StudentRoleEnum.id}, 100),
+          (102, NULL, NULL, 'student2', '$SHA256_123', ${ActiveEnum.id}, 1440, ${StudentRoleEnum.id}, 100),
+          (200, NULL, NULL, 'otherteacher', '$SHA256_123', ${ActiveEnum.id}, 1440, ${TeacherRoleEnum.id}, NULL),
+          (201, NULL, NULL, 'otherstudent1', '$SHA256_123', ${ActiveEnum.id}, 1440, ${StudentRoleEnum.id}, 200),
+          (202, NULL, NULL, 'otherstudent2', '$SHA256_123', ${ActiveEnum.id}, 1440, ${StudentRoleEnum.id}, 200),
+          (300, NULL, NULL, '_god', '$SHA256_123', ${ActiveEnum.id}, 1440, ${GodRoleEnum.id}, NULL);
       """,
       s"""INSERT INTO auth_token(token, created_at, expires_at, active, user_id) VALUES
            ('$teacherAuthToken', '$presentTime', '${presentTime.plusMinutes(20)}', true, 100),
@@ -45,11 +45,13 @@ class UserControllerSpec extends Specification with TestSupport with ScalaFuture
            |[
            |  {
            |    "id": 101,
-           |    "login": "student1"
+           |    "login": "student1",
+           |    "role": "student"
            |  },
            |  {
            |    "id": 102,
-           |    "login": "student2"
+           |    "login": "student2",
+           |    "role": "student"
            |  }
            |]
         """.stripMargin))
@@ -62,11 +64,13 @@ class UserControllerSpec extends Specification with TestSupport with ScalaFuture
            |[
            |  {
            |    "id": 201,
-           |    "login": "otherstudent1"
+           |    "login": "otherstudent1",
+           |    "role": "student"
            |  },
            |  {
            |    "id": 202,
-           |    "login": "otherstudent2"
+           |    "login": "otherstudent2",
+           |    "role": "student"
            |  }
            |]
         """.stripMargin))
@@ -82,38 +86,83 @@ class UserControllerSpec extends Specification with TestSupport with ScalaFuture
            |[
            |  {
            |    "id": 1,
-           |    "login": "god"
+           |    "login": "god",
+           |    "name": "Nikolai",
+           |    "lastname": "Cherkezishvili",
+           |    "role": "god"
            |  },
            |  {
            |    "id": 100,
-           |    "login": "teacher"
+           |    "login": "teacher",
+           |    "role": "teacher"
            |  },
            |  {
            |    "id": 101,
-           |    "login": "student1"
+           |    "login": "student1",
+           |    "role": "student"
            |  },
            |  {
            |    "id": 102,
-           |    "login": "student2"
+           |    "login": "student2",
+           |    "role": "student"
            |  },
            |  {
            |    "id": 200,
-           |    "login": "otherteacher"
+           |    "login": "otherteacher",
+           |    "role": "teacher"
            |  },
            |  {
            |    "id": 201,
-           |    "login": "otherstudent1"
+           |    "login": "otherstudent1",
+           |    "role": "student"
            |  },
            |  {
            |    "id": 202,
-           |    "login": "otherstudent2"
+           |    "login": "otherstudent2",
+           |    "role": "student"
            |  },
            |  {
            |    "id": 300,
-           |    "login": "_god"
+           |    "login": "_god",
+           |    "role": "god"
            |  }
            |]
         """.stripMargin))
+    }
+
+  }
+
+  "POST /users" should {
+
+    "create new user is current user is ADMIN" in new WithLangApplication(app) {
+      val request =
+        s"""
+          |{
+          |  "login": "newTeacher",
+          |  "role": "teacher",
+          |  "passwordHash": "$SHA256_123"
+          |}
+        """.stripMargin
+
+
+      override def sqlTestData: Seq[String] = insertUserWithAuthToken(100, teacherAuthToken, TeacherRoleEnum, "teacher")
+
+      whenReady(userDao.byLogin("newTeacher")) {
+        _ must equalTo(None)
+      }
+
+      val result = route(app, FakeRequest(POST, "/users", FakeHeaders().add(tokenHeader(teacherAuthToken)).add(jsonContentTypeHeader), request)).get
+
+      contentAsString(result) must equalTo("User newTeacher was successfully added")
+      status(result) must equalTo(OK)
+      whenReady(userDao.byLogin("newTeacher")) {
+        case Some(user) =>
+          user.login must equalTo("newTeacher")
+          user.roleId must equalTo(TeacherRoleEnum.id)
+          user.passwordHash must equalTo(SHA256_123)
+          user.ownerUserId must equalTo(Some(100))
+        case None => failure("User newTeacher has not been created")
+      }
     }
 
   }

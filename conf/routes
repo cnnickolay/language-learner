@@ -37,6 +37,7 @@ GET            /languages                               controllers.LanguageCont
 GET            /translations                            controllers.TranslationController.translate(from: String, to: String, word: String)
 
 GET            /users                                   controllers.UsersController.users
+POST           /users                                   controllers.UsersController.create
 
 GET            /course                                  controllers.CourseController.getAll
 POST           /course                                  controllers.CourseController.create

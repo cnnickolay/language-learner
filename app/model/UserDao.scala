@@ -29,6 +29,7 @@ class UserDao @Inject() (val dbConfigProvider: DatabaseConfigProvider,
   def byLoginAndPassword(login: String, passwordHash: String) = db.run {
     Users.filter(user => user.login === login && user.passwordHash === passwordHash).result.headOption
   }
+  def byLogin(login: String) = db.run(Users.filter(_.login === login).result.headOption)
   def create(user: User) = db.run(Users += user)
   def delete(id: Long) = db.run(Users.filter(_.id === id).delete)
   def update(id: Long, user: User) = db.run(Users.filter(_.id === id).update(user))

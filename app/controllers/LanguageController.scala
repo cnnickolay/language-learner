@@ -22,11 +22,9 @@ class LanguageController @Inject()(val languageDao: LanguageDao,
   def byId(id: Int) = authAction.async {
     for {
       language <- languageDao.byId(id)
-    } yield {
-      language match {
-        case Some(value) => Ok(Json.toJson(value))
-        case None => BadRequest(s"Language with id $id not found")
-      }
+    } yield language match {
+      case Some(value) => Ok(Json.toJson(value))
+      case None => BadRequest(s"Language with id $id not found")
     }
   }
 
