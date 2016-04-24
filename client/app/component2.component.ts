@@ -1,5 +1,5 @@
 import {Component} from "angular2/core";
-import {HttpService} from "./http.service";
+import {HttpService} from "./services/http.service";
 import {OnInit} from "angular2/core";
 
 @Component({
@@ -15,9 +15,7 @@ export class Component2 implements OnInit {
 
   mediaGroups: {};
 
-  constructor(private httpService: HttpService) {
-
-  }
+  constructor(private httpService: HttpService) { }
 
   ngOnInit() {
     this.httpService.getMediaGroups().subscribe(

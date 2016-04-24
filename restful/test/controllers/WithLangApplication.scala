@@ -23,19 +23,12 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
   lazy val userDao = app.injector.instanceOf[UserDao]
   lazy val authTokenDao = app.injector.instanceOf[AuthTokenDao]
   lazy val languageDao = app.injector.instanceOf[LanguageDao]
-  lazy val mediaDao = app.injector.instanceOf[MediaDao]
-  lazy val mediaGroupDao = app.injector.instanceOf[MediaGroupDao]
   lazy val roleDao = app.injector.instanceOf[RoleDao]
   lazy val statusDao = app.injector.instanceOf[StatusDao]
-  lazy val subtitleDao = app.injector.instanceOf[SubtitleDao]
   lazy val courseDao = app.injector.instanceOf[CourseDao]
 
   def initUsers: Seq[User] = Seq()
-
   def initAuthTokens: Seq[AuthToken] = Seq()
-
-  def initMediaGroups: Seq[MediaGroup] = Seq()
-
   def sqlTestData: Seq[String] = Seq()
 
   override def around[T](t: => T)(implicit evidence$2: AsResult[T]): Result = {
@@ -55,15 +48,12 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
 
     val _users = initUsers
     val _authTokens = initAuthTokens
-    val _mediaGroups = initMediaGroups
     _users.foreach(value => println(s"++$value"))
     _authTokens.foreach(value => println(s"++$value"))
-    _mediaGroups.foreach(value => println(s"++$value"))
 
     val seq: dbio.DBIOAction[Unit, NoStream, Write] = dbio.DBIO.seq(
       userDao.Users ++= _users,
-      authTokenDao.AuthTokens ++= _authTokens,
-      mediaGroupDao.MediaGroups ++= _mediaGroups
+      authTokenDao.AuthTokens ++= _authTokens
     )
     Await.result(dbProvider.db.run(seq), Inf)
 

@@ -4,7 +4,7 @@ import {RouteConfig} from "angular2/router";
 import {ROUTER_DIRECTIVES} from "angular2/router";
 import {Component1} from "./component1.component";
 import {Component2} from "./component2.component";
-import {AuthenticationService} from "./authentication.service";
+import {AuthenticationService} from "./services/authentication.service";
 
 
 @Component({
