@@ -2,7 +2,7 @@ logs
 target
 .sbtserver
 *.log
-/restful/.idea
+/**/.idea
 /.idea_modules
 /.classpath
 /.project
