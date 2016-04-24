@@ -20,7 +20,8 @@ class AuthenticationController @Inject()(val userDao: UserDao,
                                          val userAction: UserAction,
                                          val authTokenRefreshAction: AuthTokenRefreshAction,
                                          val authTokenGenerator: AuthTokenGenerator,
-                                         val timeService: TimeService) extends Controller with ActionsConfiguration with TimeConversion {
+                                         val timeService: TimeService,
+                                         val corsAction: CORSAction) extends Controller with ActionsConfiguration with TimeConversion {
 
   val l = Logger(classOf[AuthenticationController])
 
@@ -34,7 +35,7 @@ class AuthenticationController @Inject()(val userDao: UserDao,
     (__ \ "expiresAt").format[DateTime]
   ).tupled
 
-  def obtainToken = CORSAction.async { request =>
+  def obtainToken = corsAction.async { request =>
     request.body.asJson.map { json =>
       userFormatter reads json match {
         case JsSuccess(user @ (login: String, password: String), _) => l.debug("User parsed");Some(user)

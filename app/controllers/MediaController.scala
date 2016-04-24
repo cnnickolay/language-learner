@@ -13,7 +13,8 @@ import scala.concurrent.Future
 class MediaController @Inject()(val mediaDao: MediaDao,
                                 val subtitleDao: SubtitleDao,
                                 val userAction: UserAction,
-                                val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
+                                val authTokenRefreshAction: AuthTokenRefreshAction,
+                                val corsAction: CORSAction) extends Controller with ActionsConfiguration {
 
   def getAll = authAction.async {
     for {

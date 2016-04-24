@@ -4,7 +4,7 @@ import com.google.inject.Inject
 import model._
 import play.api.libs.json._
 import play.api.mvc.{Controller, Result}
-import utils.actions.{ActionsConfiguration, AuthTokenRefreshAction, UserAction}
+import utils.actions.{CORSAction, ActionsConfiguration, AuthTokenRefreshAction, UserAction}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -12,7 +12,8 @@ import scala.concurrent.Future
 class CourseController @Inject()(val languageDao: LanguageDao,
                                  val courseDao: CourseDao,
                                  val userAction: UserAction,
-                                 val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
+                                 val authTokenRefreshAction: AuthTokenRefreshAction,
+                                 val corsAction: CORSAction) extends Controller with ActionsConfiguration {
 
   case class CourseJson(id: Option[Long] = None, name: String, targetLanguage: String, presentingLanguage: String)
 

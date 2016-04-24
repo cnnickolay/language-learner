@@ -5,13 +5,14 @@ import model.LanguageDao
 import model.JsonConverters._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
-import utils.actions.{UserAction, AuthTokenRefreshAction, ActionsConfiguration}
+import utils.actions.{CORSAction, UserAction, AuthTokenRefreshAction, ActionsConfiguration}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class LanguageController @Inject()(val languageDao: LanguageDao,
                                    val userAction: UserAction,
-                                   val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
+                                   val authTokenRefreshAction: AuthTokenRefreshAction,
+                                   val corsAction: CORSAction) extends Controller with ActionsConfiguration {
 
   def getAll = authAction.async {
     for {

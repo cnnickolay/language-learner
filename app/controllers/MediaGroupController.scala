@@ -7,14 +7,15 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import play.api.mvc.Controller
-import utils.actions.{ActionsConfiguration, AuthTokenRefreshAction, UserAction}
+import utils.actions.{CORSAction, ActionsConfiguration, AuthTokenRefreshAction, UserAction}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class MediaGroupController @Inject()(val mediaGroupDao: MediaGroupDao,
                                      val userAction: UserAction,
-                                     val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
+                                     val authTokenRefreshAction: AuthTokenRefreshAction,
+                                     val corsAction: CORSAction) extends Controller with ActionsConfiguration {
 
   val l = Logger(classOf[MediaGroupController])
 

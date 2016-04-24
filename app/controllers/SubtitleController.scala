@@ -6,14 +6,15 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 import utils.SrtParser
-import utils.actions.{UserAction, AuthTokenRefreshAction, ActionsConfiguration}
+import utils.actions.{CORSAction, UserAction, AuthTokenRefreshAction, ActionsConfiguration}
 
 import scala.concurrent.Future
 import scala.math.BigDecimal.RoundingMode
 
 class SubtitleController @Inject()(val subtitleDao: SubtitleDao,
                                    val userAction: UserAction,
-                                   val authTokenRefreshAction: AuthTokenRefreshAction) extends Controller with ActionsConfiguration {
+                                   val authTokenRefreshAction: AuthTokenRefreshAction,
+                                   val corsAction: CORSAction) extends Controller with ActionsConfiguration {
 
   import JsonConverters._
 
