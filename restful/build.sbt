@@ -26,3 +26,4 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 routesGenerator := InjectedRoutesGenerator
 
 javaOptions in Test += "-Dconfig.file=conf/application_test.conf"
+scalacOptions in Test ++= Seq("-Yrangepos")

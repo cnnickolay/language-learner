@@ -2,7 +2,6 @@ logs
 target
 .sbtserver
 *.log
-/**/.idea
 /.idea_modules
 /.classpath
 /.project
