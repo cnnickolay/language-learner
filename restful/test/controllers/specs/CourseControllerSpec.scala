@@ -28,7 +28,7 @@ class CourseControllerSpec extends Specification with TestSupport with ScalaFutu
     "return all courses if user is ADMIN" in new WithLangApplication(app) {
       override def sqlTestData: Seq[String] =
         insertAdminUser :+
-        insertCourse(1, "course¡1", FrenchLanguageEnum.id, EnglishLanguageEnum.id) :+
+        insertCourse(1, "course1", FrenchLanguageEnum.id, EnglishLanguageEnum.id) :+
         insertCourse(2, "course2", EnglishLanguageEnum.id, GermanLanguageEnum.id)
 
       val result = route(app, FakeRequest(GET, "/course", FakeHeaders().add(tokenHeader(adminAuthToken)), "")).get
