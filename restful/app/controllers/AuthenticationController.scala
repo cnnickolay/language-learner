@@ -7,7 +7,7 @@ import play.api.Logger
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{JsSuccess, _}
-import play.api.mvc.Controller
+import play.api.mvc.{Controller, Result}
 import utils.actions.{ActionsConfiguration, AuthTokenRefreshAction, CORSAction, UserAction}
 import utils.{AuthTokenGenerator, HashUtils, TimeConversion, TimeService}
 
@@ -35,57 +35,61 @@ class AuthenticationController @Inject()(val userDao: UserDao,
     (__ \ "expiresAt").format[DateTime]
   ).tupled
 
-  def obtainToken = corsAction.async { request =>
+  def obtainToken = corsAction.async {
+    request =>
     request.body.asJson.map { json =>
       userFormatter reads json match {
-        case JsSuccess(user @ (login: String, password: String), _) => l.debug("User parsed");Some(user)
+        case JsSuccess(user @ (login: String, password: String), _) => l.debug("User parsed"); Some(user)
         case _ => l.error("Failed to parse payload"); None
       }
     } map {
       case None => l.error("Unable to parse json"); Future(BadRequest("Unable to parse json"))
-      case Some(user @ (login: String, password: String)) =>
-        val passwordHash = HashUtils.calculateSha256(password)
-        authTokenDao.findActiveTokenByUser(login, passwordHash) flatMap {
-          case foundToken @ Some(token) =>
-            val now = timeService.now
-            if (now.before(token.expiresAt)) {
-              for {
-                Some(user) <- userDao.byLoginAndPassword(login, passwordHash)
-                expirationDate = now.plusMinutes(user.sessionDuration)
-                _ <- authTokenDao.refreshToken(token.token, expirationDate)
-                authToken <- authTokenDao.findActiveToken(token.token)
-              } yield {
-                authToken
-              }
-            } else {
-              authTokenDao.revokeToken(token.token).flatMap(_ => userDao.byLoginAndPassword(login, passwordHash))
-            }
-          case None =>
-            l.debug("Token not found, creating a new one")
-            userDao.byLoginAndPassword(login, passwordHash)
-        } map {
-          case None =>
-            val err = s"User with login $login and password hash $passwordHash not found"
-            l.debug(err)
-            Unauthorized(err)
-          case Some(user: User) =>
-            l.debug(s"User ${user.login} found. Creating new security token")
-            val now = timeService.now
-            val userId: Long = user.id.getOrElse(-1)
-            val generatedToken: String = authTokenGenerator.nextAuthToken()
-            val token = AuthToken(
-              generatedToken,
-              now,
-              now.plusMinutes(user.sessionDuration),
-              None, active = true, userId)
-            Await.ready(authTokenDao.create(token), Duration.Inf)
-            Ok(authenticationTokenFormatter writes(generatedToken, token.expiresAt))
-          case Some(token: AuthToken) => Ok(authenticationTokenFormatter writes(token.token, token.expiresAt))
-          case x @ _ => l.error(s"Not defined $x"); BadRequest("Unidentified error")
-        }
+      case Some(user @ (login: String, password: String)) => processUser(login, password)
     } getOrElse Future(BadRequest)
-
   }
+
+  def processUser(login: String, password: String): Future[Result] = {
+    val passwordHash = HashUtils.calculateSha256(password)
+    authTokenDao.findActiveTokenByUser(login, passwordHash) flatMap {
+      case foundToken@Some(token) =>
+        val now = timeService.now
+        if (now.before(token.expiresAt)) {
+          for {
+            Some(user) <- userDao.byLoginAndPassword(login, passwordHash)
+            expirationDate = now.plusMinutes(user.sessionDuration)
+            _ <- authTokenDao.refreshToken(token.token, expirationDate)
+            authToken <- authTokenDao.findActiveToken(token.token)
+          } yield {
+            authToken
+          }
+        } else {
+          authTokenDao.revokeToken(token.token).flatMap(_ => userDao.byLoginAndPassword(login, passwordHash))
+        }
+      case None =>
+        l.debug("Token not found, creating a new one")
+        userDao.byLoginAndPassword(login, passwordHash)
+    } map {
+      case None =>
+        val err = s"User with login $login and password hash $passwordHash not found"
+        l.debug(err)
+        Unauthorized(err)
+      case Some(user: User) =>
+        l.debug(s"User ${user.login} found. Creating new security token")
+        val now = timeService.now
+        val userId: Long = user.id.getOrElse(-1)
+        val generatedToken: String = authTokenGenerator.nextAuthToken()
+        val token = AuthToken(
+          generatedToken,
+          now,
+          now.plusMinutes(user.sessionDuration),
+          None, active = true, userId)
+        Await.ready(authTokenDao.create(token), Duration.Inf)
+        Ok(authenticationTokenFormatter writes(generatedToken, token.expiresAt))
+      case Some(token: AuthToken) => Ok(authenticationTokenFormatter writes(token.token, token.expiresAt))
+      case x@_ => l.error(s"Not defined $x"); BadRequest("Unidentified error")
+    }
+  }
+
 
   def revokeToken = authAction.async { request =>
     Future {

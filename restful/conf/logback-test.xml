@@ -17,6 +17,7 @@
   <logger name="controllers" level="DEBUG" />
   <logger name="model" level="DEBUG" />
   <logger name="utils" level="DEBUG" />
+  <logger name="com.zaxxer.hikari.HikariConfig" level="DEBUG" />
 
   <root level="ERROR">
     <appender-ref ref="STDOUT" />

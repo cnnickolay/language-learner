@@ -35,7 +35,7 @@ abstract class WithLangApplication(app: Application) extends WithApplication(app
     val databaseApi = app.injector.instanceOf[DBApi]
     val database: Database = databaseApi.database("default")
 
-    database.getConnection().prepareStatement("drop schema public cascade;").execute()
+    database.getConnection().prepareStatement("drop schema if exists public cascade;").execute()
     database.getConnection().prepareStatement("create schema public;").execute()
 
     Evolutions.applyEvolutions(database)
