@@ -1,3 +1,6 @@
+# IMPORTANT NOTE
+This was my first Scala project so Scala code here is far from perfect and many coding solutions should have been done differently. However it was good step towards learning Scala :P
+
 # Language learner
 
 The original goal of the project was to facilitate language learning process. At the current stage of implementation project allows
